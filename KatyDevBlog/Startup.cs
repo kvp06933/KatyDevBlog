@@ -1,5 +1,7 @@
+
 using KatyDevBlog.Data;
 using KatyDevBlog.Models;
+using KatyDevBlog.Services;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.HttpsPolicy;
@@ -30,7 +32,7 @@ namespace KatyDevBlog
         {
             services.AddDbContext<ApplicationDbContext>(options =>
                 options.UseNpgsql(
-                    Configuration.GetConnectionString("DefaultConnection")));
+                    ConnectionService.GetConnectionString(Configuration)));
             services.AddDatabaseDeveloperPageExceptionFilter();
 
             //services.AddDefaultIdentity<IdentityUser>(options => options.SignIn.RequireConfirmedAccount = true)
@@ -40,6 +42,9 @@ namespace KatyDevBlog
                 .AddDefaultTokenProviders()
                 .AddEntityFrameworkStores<ApplicationDbContext>();
             services.AddControllersWithViews();
+
+            //Register the DataService...
+            services.AddTransient<DataService>();
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
