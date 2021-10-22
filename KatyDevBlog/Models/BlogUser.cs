@@ -31,5 +31,8 @@ namespace KatyDevBlog.Models
                 return $"{FirstName} {LastName}";
             }
         }
+        public byte[] ImageData { get; set; }
+        public string ImageType { get; set; }
+        
     }
 }
