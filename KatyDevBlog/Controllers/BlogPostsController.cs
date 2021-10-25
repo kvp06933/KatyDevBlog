@@ -48,7 +48,7 @@ namespace KatyDevBlog.Controllers
         // GET: BlogPosts/Create
         public IActionResult Create()
         {
-            ViewData["BlogId"] = new SelectList(_context.Blogs, "Id", "Description");
+            ViewData["BlogId"] = new SelectList(_context.Blogs, "Id", "Name");
             return View();
         }
 
@@ -57,7 +57,7 @@ namespace KatyDevBlog.Controllers
         // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Create([Bind("Title,Abstract,Content")] BlogPost blogPost)
+        public async Task<IActionResult> Create([Bind("Title,Abstract,Content,Image,ReadyStatus")] BlogPost blogPost)
         {
             if (ModelState.IsValid)
             {
@@ -67,7 +67,7 @@ namespace KatyDevBlog.Controllers
                 await _context.SaveChangesAsync();
                 return RedirectToAction(nameof(Index));
             }
-            ViewData["BlogId"] = new SelectList(_context.Blogs, "Id", "Description", blogPost.BlogId);
+            ViewData["BlogId"] = new SelectList(_context.Blogs, "Id", "Name", blogPost.BlogId);
             return View(blogPost);
         }
 
@@ -84,7 +84,7 @@ namespace KatyDevBlog.Controllers
             {
                 return NotFound();
             }
-            ViewData["BlogId"] = new SelectList(_context.Blogs, "Id", "Description", blogPost.BlogId);
+            ViewData["BlogId"] = new SelectList(_context.Blogs, "Id", "Name", blogPost.BlogId);
             return View(blogPost);
         }
 
@@ -93,7 +93,7 @@ namespace KatyDevBlog.Controllers
         // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Edit(int id, [Bind("Id,BlogId,Title,Abstract,Content,Created,Updated")] BlogPost blogPost)
+        public async Task<IActionResult> Edit(int id, [Bind("Id,BlogId,Title,Abstract,Content,Created,Updated,Slug,ReadyStatus,ImageType,ImageData")] BlogPost blogPost)
         {
             if (id != blogPost.Id)
             {
@@ -120,7 +120,7 @@ namespace KatyDevBlog.Controllers
                 }
                 return RedirectToAction(nameof(Index));
             }
-            ViewData["BlogId"] = new SelectList(_context.Blogs, "Id", "Description", blogPost.BlogId);
+            ViewData["BlogId"] = new SelectList(_context.Blogs, "Id", "Name", blogPost.BlogId);
             return View(blogPost);
         }
 

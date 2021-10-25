@@ -9,6 +9,6 @@ namespace KatyDevBlog.Enums
     {
         Ready,
         InProduction,
-        NotReady
+        InPreview
     }
 }
