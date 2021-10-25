@@ -2,6 +2,7 @@
 using KatyDevBlog.Data;
 using KatyDevBlog.Models;
 using KatyDevBlog.Services;
+using KatyDevBlog.Services.Interfaces;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.HttpsPolicy;
@@ -42,7 +43,7 @@ namespace KatyDevBlog
                 .AddDefaultTokenProviders()
                 .AddEntityFrameworkStores<ApplicationDbContext>();
             services.AddControllersWithViews();
-
+            services.AddScoped<IImageService, BasicImageService>();
             //Register the DataService...
             services.AddTransient<DataService>();
         }
