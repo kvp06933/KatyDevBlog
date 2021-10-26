@@ -1,5 +1,6 @@
 ﻿using KatyDevBlog.Services.Interfaces;
 using Microsoft.AspNetCore.Http;
+using Microsoft.Extensions.Configuration;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -10,7 +11,31 @@ namespace KatyDevBlog.Services
 {
     public class BasicImageService : IImageService
     {
-        public string ContentType(IFormFile file)
+        private readonly IConfiguration _configuration;
+
+        public BasicImageService(IConfiguration configuration)
+        {
+            _configuration = configuration;
+        }
+        public async Task<byte[]> EncodeImageAsync(IFormFile file)
+        {
+            if (file is null)
+            {
+                return null;
+            }
+
+            using var ms = new MemoryStream();
+            await file.CopyToAsync(ms);
+            return ms.ToArray();
+        }
+
+        public async Task<byte[]> EncodeImageAsync(string fileName)
+        {
+            var file = $"{Directory.GetCurrentDirectory()}/wwwroot/img/newpost.png";
+            return await File.ReadAllBytesAsync(file);
+        }
+
+        public string ImageType(IFormFile file)
         {
             if (file is null)
             {
@@ -28,31 +53,31 @@ namespace KatyDevBlog.Services
             return $"data:{type};base64,{Convert.ToBase64String(data)}";
         }
 
-        public async Task<byte[]> EncodeImageAsync(IFormFile file)
+        private bool ValidType(IFormFile file)
         {
-            if(file is null)
-            {
-                return null;
-            }
+            var fileContentType = ImageType(file).Split("/")[1];
 
-            using var ms = new MemoryStream();
-            await file.CopyToAsync(ms);
-            return ms.ToArray();
+            var acceptableExtensions = _configuration["AppImages:AcceptableTypes"];
+            var extList = acceptableExtensions.Split(',').ToList();
+            var position = extList.IndexOf(fileContentType);
+
+            return position >= 0;
         }
 
-        public async Task<byte[]> EncodeImageAsync(string fileName)
+        private bool ValidSize(IFormFile file)
         {
-            var file = $"{Directory.GetCurrentDirectory()}/wwwroot/img/{fileName}";
-            return await File.ReadAllBytesAsync(file);
+            const int maxFileSize = 2 * 1024 * 1024;
+            return Size(file) < maxFileSize;
         }
 
-        public int Size(IFormFile file)
+        public bool ValidImage(IFormFile file)
         {
-            if (file is null)
-            {
-                return 0;
-            }
-            return Convert.ToInt32(file.Length);
+            return ValidType(file) && ValidSize(file);
+        }
+
+        private int Size(IFormFile file)
+        {
+            return Convert.ToInt32(file?.Length);
         }
     }
 }

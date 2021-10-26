@@ -7,17 +7,20 @@ using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
 using KatyDevBlog.Data;
 using KatyDevBlog.Models;
+using KatyDevBlog.Services.Interfaces;
 
 namespace KatyDevBlog.Controllers
 {
     public class BlogsController : Controller
     {
         private readonly ApplicationDbContext _context; //Class Member
+        private readonly IImageService _imageService;
 
-        public BlogsController(ApplicationDbContext context)
+        public BlogsController(ApplicationDbContext context, IImageService imageService)
         {
             //Dependency Injection
             _context = context;// constructor
+            _imageService = imageService;
         }
 
         // GET: Blogs
@@ -59,6 +62,25 @@ namespace KatyDevBlog.Controllers
         {
             if (ModelState.IsValid)
             {
+                if (blog.Image is null)
+                {
+                    blog.ImageData = await _imageService.EncodeImageAsync("newblog.jpg");
+                    blog.ImageType = "jpg";
+                }
+                else
+                {
+                    if (!_imageService.ValidImage(blog.Image))
+                    {
+                        //We need to add a custom Model Error and inform the user
+                        ModelState.AddModelError("Image", "Please choose a valid image");
+                        return View(blog);
+                    }
+                    else
+                    {
+                        blog.ImageData = await _imageService.EncodeImageAsync(blog.Image);
+                        blog.ImageType = _imageService.ImageType(blog.Image);
+                    }
+                }
                 //Programmatically add in the Created Date
                 blog.Created = DateTime.Now;
                 //Adds new blog record to DbSet<Blog>
@@ -91,7 +113,7 @@ namespace KatyDevBlog.Controllers
         // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Edit(int id, [Bind("Id,Name,Description,Created,ImageData,ImageType")] Blog blog)
+        public async Task<IActionResult> Edit(int id, [Bind("Id,Name,Description,Created,Image,ImageData,ImageType")] Blog blog)
         {
             if (id != blog.Id)
             {
@@ -102,6 +124,22 @@ namespace KatyDevBlog.Controllers
             {
                 try
                 {
+                    //Did the user choose a NEW image
+                    if(blog.Image is not null)
+                    {
+                        //If the image fails validation, complain to the user
+                        if (!_imageService.ValidImage(blog.Image))
+                        {
+                            ModelState.AddModelError("Image", "There was a problem with the image, please choose another one.");
+                            return View(blog);
+                        }
+                        else
+                        {
+                            blog.ImageData = await _imageService.EncodeImageAsync(blog.Image);
+                            blog.ImageType = _imageService.ImageType(blog.Image);
+                        }
+                    }
+
                     _context.Update(blog);
                     await _context.SaveChangesAsync();
                 }
