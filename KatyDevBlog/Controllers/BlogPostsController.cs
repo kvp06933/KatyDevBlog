@@ -7,16 +7,19 @@ using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
 using KatyDevBlog.Data;
 using KatyDevBlog.Models;
+using KatyDevBlog.Services.Interfaces;
 
 namespace KatyDevBlog.Controllers
 {
     public class BlogPostsController : Controller
     {
         private readonly ApplicationDbContext _context;
+        private readonly IImageService _imageService;
 
-        public BlogPostsController(ApplicationDbContext context)
+        public BlogPostsController(ApplicationDbContext context, IImageService imageService)
         {
             _context = context;
+            _imageService = imageService;
         }
 
         // GET: BlogPosts
@@ -57,10 +60,29 @@ namespace KatyDevBlog.Controllers
         // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Create([Bind("Title,Abstract,Content,Image,ReadyStatus")] BlogPost blogPost)
+        public async Task<IActionResult> Create([Bind("BlogId,Title,Abstract,Content,Image,ReadyStatus")] BlogPost blogPost)
         {
             if (ModelState.IsValid)
             {
+                if (blogPost.Image is null)
+                {
+                    blogPost.ImageData = await _imageService.EncodeImageAsync("newpost.jpg");
+                    blogPost.ImageType = "jpg";
+                }
+                else
+                {
+                    if (!_imageService.ValidImage(blogPost.Image))
+                    {
+                        //We need to add a custom Model Error and inform the user
+                        ModelState.AddModelError("Image", "Please choose a valid image");
+                        return View(blogPost);
+                    }
+                    else
+                    {
+                        blogPost.ImageData = await _imageService.EncodeImageAsync(blogPost.Image);
+                        blogPost.ImageType = _imageService.ImageType(blogPost.Image);
+                    }
+                }
                 blogPost.Created = DateTime.Now;
                 blogPost.Updated = DateTime.Now;
                 _context.Add(blogPost);
@@ -104,6 +126,21 @@ namespace KatyDevBlog.Controllers
             {
                 try
                 {
+                    //Did the user choose a NEW image
+                    if (blogPost.Image is not null)
+                    {
+                        //If the image fails validation, complain to the user
+                        if (!_imageService.ValidImage(blogPost.Image))
+                        {
+                            ModelState.AddModelError("Image", "There was a problem with the image, please choose another one.");
+                            return View(blogPost);
+                        }
+                        else
+                        {
+                            blogPost.ImageData = await _imageService.EncodeImageAsync(blogPost.Image);
+                            blogPost.ImageType = _imageService.ImageType(blogPost.Image);
+                        }
+                    }
                     _context.Update(blogPost);
                     await _context.SaveChangesAsync();
                 }

@@ -11,8 +11,8 @@ namespace KatyDevBlog.Services.Interfaces
         Task<byte[]> EncodeImageAsync(IFormFile file);
         Task<byte[]> EncodeImageAsync(string fileName);
         string DecodeImage(byte[] data, string type);
-        string ContentType(IFormFile file);
-        int Size(IFormFile file);
+        string ImageType(IFormFile file);
+        bool ValidImage(IFormFile file);
     }
 }
 
