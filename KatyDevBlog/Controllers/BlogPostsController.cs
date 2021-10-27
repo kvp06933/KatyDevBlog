@@ -35,7 +35,11 @@ namespace KatyDevBlog.Controllers
         // GET: BlogPosts
         public async Task<IActionResult> Index()
         {
-            var applicationDbContext = _context.BlogPosts.Include(b => b.Blog);
+            var applicationDbContext = _context.BlogPosts
+                .Include(b => b.Blog)
+                .Where(b => b.ReadyStatus == ReadyState.Ready)
+                .OrderByDescending(b => b.Created);
+            ;
             return View(await applicationDbContext.ToListAsync());
         }
 
