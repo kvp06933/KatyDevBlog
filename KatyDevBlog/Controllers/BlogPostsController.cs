@@ -9,6 +9,7 @@ using KatyDevBlog.Data;
 using KatyDevBlog.Models;
 using KatyDevBlog.Services.Interfaces;
 using KatyDevBlog.Enums;
+using Microsoft.AspNetCore.Authorization;
 
 namespace KatyDevBlog.Controllers
 {
@@ -74,7 +75,8 @@ namespace KatyDevBlog.Controllers
         }
 
         // GET: BlogPosts/Create
-        public IActionResult Create(int? id) // Why is this a nullable integer -refer to BlogPost index
+        [Authorize(Roles = "Administrator")]
+        public IActionResult Create(int? id) 
         {
             //If i am given an id
             //1. It represents the BlogPost.BlogId
@@ -142,6 +144,7 @@ namespace KatyDevBlog.Controllers
         }
 
         // GET: BlogPosts/Edit/5
+        [Authorize(Roles = "Administrator")]
         public async Task<IActionResult> Edit(int? id)
         {
             if (id == null)
@@ -226,6 +229,7 @@ namespace KatyDevBlog.Controllers
         }
 
         // GET: BlogPosts/Delete/5
+        [Authorize(Roles = "Administrator")]
         public async Task<IActionResult> Delete(int? id)
         {
             if (id == null)
