@@ -8,6 +8,7 @@ using Microsoft.EntityFrameworkCore;
 using KatyDevBlog.Data;
 using KatyDevBlog.Models;
 using KatyDevBlog.Services.Interfaces;
+using KatyDevBlog.Enums;
 
 namespace KatyDevBlog.Controllers
 {
@@ -22,6 +23,15 @@ namespace KatyDevBlog.Controllers
             _imageService = imageService;
         }
 
+        public async Task<IActionResult> ChildIndex(int blogId)
+        {
+            var blogPosts = _context.BlogPosts
+                .Include(b=>b.Blog)//Navigation property- drag parent reference along with child
+                .Where(b => b.BlogId == blogId && b.ReadyStatus == ReadyState.Ready)
+                .OrderByDescending(b =>b.Created);
+
+            return View("Index", await blogPosts.ToListAsync());
+        }
         // GET: BlogPosts
         public async Task<IActionResult> Index()
         {
@@ -49,8 +59,20 @@ namespace KatyDevBlog.Controllers
         }
 
         // GET: BlogPosts/Create
-        public IActionResult Create()
+        public IActionResult Create(int? id) // Why is this a nullable integer -refer to BlogPost index
         {
+            //If i am given an id
+            //1. It represents the BlogPost.BlogId
+            //2. I dont show the select list to the user
+            //3. I embed the incoming id into the form somehow so that it's treated as the BlogId
+            if(id is not null)
+            {
+                BlogPost newBlogPost = new() //new up an instance of type BlogPost with newBlogPost
+                {
+                    BlogId = (int)id //Foreign key
+                };
+                return View(newBlogPost);
+            }
             ViewData["BlogId"] = new SelectList(_context.Blogs, "Id", "Name");
             return View();
         }
