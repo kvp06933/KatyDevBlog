@@ -16,11 +16,13 @@ namespace KatyDevBlog.Controllers
     {
         private readonly ApplicationDbContext _context;
         private readonly IImageService _imageService;
+        private readonly ISlugService _slugService;
 
-        public BlogPostsController(ApplicationDbContext context, IImageService imageService)
+        public BlogPostsController(ApplicationDbContext context, IImageService imageService, ISlugService slugService)
         {
             _context = context;
             _imageService = imageService;
+            _slugService = slugService;
         }
 
         public async Task<IActionResult> ChildIndex(int blogId)
@@ -41,6 +43,15 @@ namespace KatyDevBlog.Controllers
                 .OrderByDescending(b => b.Created);
             ;
             return View(await applicationDbContext.ToListAsync());
+        }
+        public async Task<IActionResult> Preview()
+        {
+            var applicationDbContext = _context.BlogPosts
+                .Include(b => b.Blog)
+                .Where(b => b.ReadyStatus == ReadyState.InPreview)
+                .OrderByDescending(b => b.Created);
+            ;
+            return View("Index", await applicationDbContext.ToListAsync());
         }
 
         // GET: BlogPosts/Details/5
@@ -90,6 +101,17 @@ namespace KatyDevBlog.Controllers
         {
             if (ModelState.IsValid)
             {
+                var slug = _slugService.UrlFriendly(blogPost.Title);
+                if (!_slugService.IsUnique(slug))
+                {
+                    ModelState.AddModelError("Title", "The title is already in use.");
+                    return View(blogPost);
+                }
+                else
+                {
+                    blogPost.Slug = slug;
+                }
+
                 if (blogPost.Image is null)
                 {
                     blogPost.ImageData = await _imageService.EncodeImageAsync("newpost.jpg");
