@@ -42,6 +42,15 @@ namespace KatyDevBlog.Controllers
             ;
             return View(await applicationDbContext.ToListAsync());
         }
+        public async Task<IActionResult> Preview()
+        {
+            var applicationDbContext = _context.BlogPosts
+                .Include(b => b.Blog)
+                .Where(b => b.ReadyStatus == ReadyState.InPreview)
+                .OrderByDescending(b => b.Created);
+            ;
+            return View("Index", await applicationDbContext.ToListAsync());
+        }
 
         // GET: BlogPosts/Details/5
         public async Task<IActionResult> Details(int? id)
