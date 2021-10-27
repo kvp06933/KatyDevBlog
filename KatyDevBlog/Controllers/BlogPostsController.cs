@@ -163,7 +163,7 @@ namespace KatyDevBlog.Controllers
         // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Edit(int id, [Bind("Id,BlogId,Title,Abstract,Content,Created,Updated,Slug,ReadyStatus,ImageType,ImageData")] BlogPost blogPost)
+        public async Task<IActionResult> Edit(int id, [Bind("Id,BlogId,Title,Abstract,Content,Created,Updated,Slug,ReadyStatus,ImageType,ImageData,Image")] BlogPost blogPost)
         {
             if (id != blogPost.Id)
             {
@@ -172,6 +172,21 @@ namespace KatyDevBlog.Controllers
 
             if (ModelState.IsValid)
             {
+                var slug = _slugService.UrlFriendly(blogPost.Title);
+                if(slug != blogPost.Slug)
+                {
+                    if (!_slugService.IsUnique(slug))
+                    {
+                        ModelState.AddModelError("Title", "The title is already in use.");
+                        return View(blogPost);
+                    }
+                    else
+                    {
+                        blogPost.Slug = slug;
+                    }
+                }
+                
+
                 try
                 {
                     //Did the user choose a NEW image
@@ -189,6 +204,7 @@ namespace KatyDevBlog.Controllers
                             blogPost.ImageType = _imageService.ImageType(blogPost.Image);
                         }
                     }
+                    blogPost.Updated = DateTime.Now;
                     _context.Update(blogPost);
                     await _context.SaveChangesAsync();
                 }
