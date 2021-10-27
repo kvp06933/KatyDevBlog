@@ -47,6 +47,7 @@ namespace KatyDevBlog
             //Register the DataService...
             services.AddTransient<DataService>();
             services.AddScoped<IImageService, BasicImageService>();
+            services.AddTransient<ISlugService, BasicSlugService>();
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
