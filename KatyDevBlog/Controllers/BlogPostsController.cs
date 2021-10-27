@@ -9,6 +9,7 @@ using KatyDevBlog.Data;
 using KatyDevBlog.Models;
 using KatyDevBlog.Services.Interfaces;
 using KatyDevBlog.Enums;
+using Microsoft.AspNetCore.Authorization;
 
 namespace KatyDevBlog.Controllers
 {
@@ -74,7 +75,8 @@ namespace KatyDevBlog.Controllers
         }
 
         // GET: BlogPosts/Create
-        public IActionResult Create(int? id) // Why is this a nullable integer -refer to BlogPost index
+        [Authorize(Roles = "Administrator")]
+        public IActionResult Create(int? id) 
         {
             //If i am given an id
             //1. It represents the BlogPost.BlogId
@@ -142,6 +144,7 @@ namespace KatyDevBlog.Controllers
         }
 
         // GET: BlogPosts/Edit/5
+        [Authorize(Roles = "Administrator")]
         public async Task<IActionResult> Edit(int? id)
         {
             if (id == null)
@@ -163,7 +166,7 @@ namespace KatyDevBlog.Controllers
         // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Edit(int id, [Bind("Id,BlogId,Title,Abstract,Content,Created,Updated,Slug,ReadyStatus,ImageType,ImageData")] BlogPost blogPost)
+        public async Task<IActionResult> Edit(int id, [Bind("Id,BlogId,Title,Abstract,Content,Created,Updated,Slug,ReadyStatus,ImageType,ImageData,Image")] BlogPost blogPost)
         {
             if (id != blogPost.Id)
             {
@@ -172,6 +175,21 @@ namespace KatyDevBlog.Controllers
 
             if (ModelState.IsValid)
             {
+                var slug = _slugService.UrlFriendly(blogPost.Title);
+                if(slug != blogPost.Slug)
+                {
+                    if (!_slugService.IsUnique(slug))
+                    {
+                        ModelState.AddModelError("Title", "The title is already in use.");
+                        return View(blogPost);
+                    }
+                    else
+                    {
+                        blogPost.Slug = slug;
+                    }
+                }
+                
+
                 try
                 {
                     //Did the user choose a NEW image
@@ -189,6 +207,7 @@ namespace KatyDevBlog.Controllers
                             blogPost.ImageType = _imageService.ImageType(blogPost.Image);
                         }
                     }
+                    blogPost.Updated = DateTime.Now;
                     _context.Update(blogPost);
                     await _context.SaveChangesAsync();
                 }
@@ -210,6 +229,7 @@ namespace KatyDevBlog.Controllers
         }
 
         // GET: BlogPosts/Delete/5
+        [Authorize(Roles = "Administrator")]
         public async Task<IActionResult> Delete(int? id)
         {
             if (id == null)
