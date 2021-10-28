@@ -1,5 +1,5 @@
 ﻿@using KatyDevBlog.Models
-@model IEnumerable<Blog>
+@model IEnumerable<BlogPost>
 
 @{
     ViewData["Title"] = "Home Page";
@@ -25,20 +25,20 @@
 <section class="blog-list px-3 py-5 p-md-5">
     <div class="container">
         <div class="row">
-            @foreach (var blog in Model)
+            @foreach (var blogPost in Model)
             {
                 <div class="col-md-4 mb-3">
                     <div class="card blog-post-card">
-                        <img class="card-img-top" src="@blog.Image" alt="image">
+                        <img class="card-img-top" src="@blogPost.Image" alt="image">
                         <div class="card-body">
-                            <h5 class="card-title"><a class="theme-link" asp-controller="BlogPosts" asp-action="ChildIndex" asp-route-blogId="@blog.Id">@blog.Name</a></h5>
-                            <p class="card-text">@blog.Description</p>
+                            <h5 class="card-title"><a class="theme-link" asp-controller="BlogPosts" asp-action="Details" asp-route-id="@blogPost.Id">@blogPost.Title</a></h5>
+                            <p class="card-text">@blogPost.Abstract</p>
                             <p class="mb-0"><a class="text-link" href="blog-post.html">Read more &rarr;</a></p>
 
                         </div>
                         <div class="card-footer">
                             <small class="text-muted">Author <a href="www.katherinepitts.com">Katherine Pitts</a></small>
-                            <small class="text-muted">Published on @blog.Created.ToString("MMM dd, yyyy")</small>
+                            <small class="text-muted">Published on @blogPost.Created.ToString("MMM dd, yyyy")</small>
                         </div>
                     </div><!--//card-->
                 </div><!--//col-->
@@ -55,3 +55,4 @@
 
     </div>
 </section>
+
