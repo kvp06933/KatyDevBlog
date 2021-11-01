@@ -52,6 +52,9 @@ namespace KatyDevBlog.Models
         [NotMapped]
         public IFormFile Image {get;set;}
         //Navigational properties
+        //parent
         public virtual Blog Blog { get; set; }
+        //Children
+        public ICollection<Comment> Comments { get; set; } = new HashSet<Comment>();
     }
 }

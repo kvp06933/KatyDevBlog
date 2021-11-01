@@ -42,7 +42,7 @@
                             <li class="list-inline-item"><a href="#"><i class="fab fa-twitter fa-fw"></i></a></li>
                             <li class="list-inline-item"><a href="#"><i class="fab fa-linkedin-in fa-fw"></i></a></li>
                             <li class="list-inline-item"><a href="#"><i class="fab fa-github-alt fa-fw"></i></a></li>
-                           
+
                         </ul><!--//social-list-->
                         <hr>
                     </div><!--//profile-section-->
@@ -57,20 +57,26 @@
                         <li class="nav-item">
                             <a class="nav-link" asp-controller="BlogPosts" asp-action="Index"><i class="fas fa-briefcase fa-fw me-2"></i>All Posts</a>
                         </li>
-                        <li class="nav-item">
-                            <a class="nav-link" asp-controller="Blogs" asp-action="Create"><i class="fas fa-file-alt fa-fw me-2"></i>Create New Blog</a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link" asp-controller="BlogPosts" asp-action="Create"><i class="fas fa-file-alt fa-fw me-2"></i>Create New Blog Post</a>
-                        </li>
-                        
+                        @if (User.IsInRole("Administrator"))
+                        {
+                            <li class="nav-item">
+                                <a class="nav-link" asp-controller="Blogs" asp-action="Create"><i class="fas fa-file-alt fa-fw me-2"></i>Create New Blog</a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link" asp-controller="BlogPosts" asp-action="Create"><i class="fas fa-file-alt fa-fw me-2"></i>Create New Blog Post</a>
+                            </li>
+                        }
+
                         <li class="nav-item">
                             <a class="nav-link" asp-controller="Home" asp-action="ContactMe"><i class="fas fa-envelope-open-text fa-fw me-2"></i>Contact</a>
                         </li>
-                        
+                        <partial name="_LoginPartial" />
                     </ul>
-
                     
+
+
+
+
 
 
                     <div class="dark-mode-toggle text-center w-100">
