@@ -64,8 +64,8 @@ namespace KatyDevBlog.Controllers
             {
                 if (blog.Image is null)
                 {
-                    blog.ImageData = await _imageService.EncodeImageAsync("newblog.jpg");
-                    blog.ImageType = "jpg";
+                    blog.ImageData = await _imageService.EncodeImageAsync("newblog.png");
+                    blog.ImageType = "png";
                 }
                 else
                 {
