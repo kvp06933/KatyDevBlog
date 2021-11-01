@@ -1,6 +1,7 @@
 ﻿@using KatyDevBlog.Models
 @model IEnumerable<BlogPost>
-
+@inject IImageService _imageService
+@using KatyDevBlog.Services.Interfaces
 @{
     ViewData["Title"] = "Home Page";
 }
@@ -29,11 +30,11 @@
             {
                 <div class="col-md-4 mb-3">
                     <div class="card blog-post-card">
-                        <img class="card-img-top" src="@blogPost.Image" alt="image">
+                        <img class="img-fluid" src="@_imageService.DecodeImage(blogPost.ImageData, blogPost.ImageType)" />
                         <div class="card-body">
                             <h5 class="card-title"><a class="theme-link" asp-controller="BlogPosts" asp-action="Details" asp-route-id="@blogPost.Id">@blogPost.Title</a></h5>
                             <p class="card-text">@blogPost.Abstract</p>
-                            <p class="mb-0"><a class="text-link" href="blog-post.html">Read more &rarr;</a></p>
+                            <p class="mb-0"><a class="text-link" asp-controller="BlogPosts" asp-action="Details" asp-route-id="@blogPost.Id">Read more &rarr;</a></p>
 
                         </div>
                         <div class="card-footer">
