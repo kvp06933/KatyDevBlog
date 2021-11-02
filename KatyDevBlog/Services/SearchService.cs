@@ -39,8 +39,8 @@ namespace KatyDevBlog.Services
                 posts = posts.Where(p => p.Title.ToLower().Contains(searchTerm) ||
                                          p.Abstract.ToLower().Contains(searchTerm) ||
                                          p.Content.ToLower().Contains(searchTerm) ||
+                                         p.Blog.Name.ToLower().Contains(searchTerm) ||
                                          p.Comments.Any(c => c.CommentBody.ToLower().Contains(searchTerm) ||
-                                                             //c.ModeratedBody.ToLower().Contains(searchTerm) ||
                                                              c.BlogUser.FullName.ToLower().Contains(searchTerm)
                                                              )).ToList();
             }
