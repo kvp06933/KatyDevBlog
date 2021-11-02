@@ -57,6 +57,13 @@
                         <li class="nav-item">
                             <a class="nav-link" asp-controller="BlogPosts" asp-action="Index"><i class="fas fa-briefcase fa-fw me-2"></i>All Posts</a>
                         </li>
+                        <!-- A Search Form -->
+                        <li>
+                            <form>
+                                <input type="text" name="searchTerm" class="px-3" />
+                                <button class="btn btn-sm btn-dark">Search</button>
+                            </form>
+                        </li>
                         @if (User.IsInRole("Administrator"))
                         {
                             <li class="nav-item">
@@ -93,7 +100,10 @@
     </header>
 
     <div class="main-wrapper">
-        @RenderBody()
+        <div class="container-fluid">
+            @RenderBody()
+        </div>
+        
 
 
         <footer class="footer text-center py-4">
