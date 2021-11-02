@@ -10,6 +10,7 @@ using KatyDevBlog.Models;
 using KatyDevBlog.Services.Interfaces;
 using KatyDevBlog.Enums;
 using Microsoft.AspNetCore.Authorization;
+using KatyDevBlog.Services;
 
 namespace KatyDevBlog.Controllers
 {
@@ -18,12 +19,25 @@ namespace KatyDevBlog.Controllers
         private readonly ApplicationDbContext _context;
         private readonly IImageService _imageService;
         private readonly ISlugService _slugService;
+        private readonly SearchService _searchService;
 
-        public BlogPostsController(ApplicationDbContext context, IImageService imageService, ISlugService slugService)
+        public BlogPostsController(ApplicationDbContext context, IImageService imageService, ISlugService slugService, SearchService searchService)
         {
             _context = context;
             _imageService = imageService;
             _slugService = slugService;
+            _searchService = searchService;
+        }
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> SearchPosts(string searchTerm)
+        {
+            //I have to write code that uses this searchTerm to find the list of BlogPosts and then push them into the View...
+            //TODO: Create, Register and Injec tand instance of SearchService without interface
+            //var blogPosts = something...
+
+            var blogPosts = await _searchService.SearchAsync(searchTerm);
+            return View("ChildIndex", blogPosts);
         }
 
         public async Task<IActionResult> ChildIndex(int blogId)
