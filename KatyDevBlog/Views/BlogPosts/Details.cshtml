@@ -1,6 +1,8 @@
 ﻿@model KatyDevBlog.Models.BlogPost
 @inject IImageService _imageService
+@inject UserManager<BlogUser> _userManager
 @using KatyDevBlog.Services.Interfaces
+@using Microsoft.AspNetCore.Identity
 
 @{
     ViewData["Title"] = "Details";
@@ -25,7 +27,7 @@
             <div class="blog-post-body">
                 <figure class="blog-banner">
                     <img class="img-fluid" src="@_imageService.DecodeImage(@Model.ImageData, @Model.ImageType)" />
-                    
+
                 </figure>
                 <p>@Model.Content</p>
 
@@ -67,53 +69,118 @@ export  $initHighlight;
                 <blockquote class="blockquote m-lg-5 py-3   ps-4 px-lg-5">
                     <p class="mb-2">You might not think that programmers are artists, but programming is an extremely creative profession. It's logic-based creativity.</p>
                     <footer class="blockquote-footer mt-0">John Romero</footer>
-                </blockquote>
+                </blockquote>@*I want to either allow the user to leave a comment or prompt
+                    them to login if they want to leave a comment*@
 
-                <h5 class="my-3">Table Example:</h5>
-                <table class="table table-striped my-5">
-                    <thead>
-                        <tr>
-                            <th scope="col">#</th>
-                            <th scope="col">First</th>
-                            <th scope="col">Last</th>
-                            <th scope="col">Handle</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <tr>
-                            <th scope="row">1</th>
-                            <td>Mark</td>
-                            <td>Otto</td>
-                            <td>mdo</td>
-                        </tr>
-                        <tr>
-                            <th scope="row">2</th>
-                            <td>Jacob</td>
-                            <td>Thornton</td>
-                            <td>fat</td>
-                        </tr>
-                        <tr>
-                            <th scope="row">3</th>
-                            <td>Larry</td>
-                            <td>the Bird</td>
-                            <td>twitter</td>
-                        </tr>
-                    </tbody>
-                </table>
+                @if (User.Identity.IsAuthenticated)
+                {
+                    //If they are logged in I can show them the creat comment form
+                    <div class="row">
+                        <h2>Add A Comment</h2>
+                        <div class="col-6">
+                            <form asp-controller="Comments" asp-action="Create">
+                                <input type="hidden" name="BlogPostId" value="@Model.Id" />
 
-                <h5 class="mb-3">Embed A Tweet:</h5>
+                                <div class="form-group">
+                                    <textarea name="CommentBody" class="form-control" rows="5"></textarea>
+                                </div>
 
-                <blockquote class="twitter-tweet" data-lang="en"><p lang="en" dir="ltr">1969:<br>-what&#39;re you doing with that 2KB of RAM?<br>-sending people to the moon<br><br>2017:<br>-what&#39;re you doing with that 1.5GB of RAM?<br>-running Slack</p>&mdash; I Am Devloper (iamdevloper) <a href="https://twitter.com/iamdevloper/status/926458505355235328?ref_src=twsrc%5Etfw">November 3, 2017</a></blockquote>
-                <script async src="https://platform.twitter.com/widgets.js" charset="utf-8"></script>
+                                <div class="form-group">
+                                    <button class="btn btn-dark btn-lg w-100" type="submit">Submit</button>
+                                </div>
 
+                            </form>
+                        </div>
+                    </div>
 
+                }
+                else
+                {
+                    //If the user is not logged in I will prompt them to login in order to see the create comment form
+                    <div class="row">
+                        <div class="col text-center">
+                            <a class="btn btn-lg btn-dark w-75" returnUrl="" asp-area="Identity" asp-page="/Account/Login">Login to add a comment!</a>
+                        </div>
+                    </div>
+                }
 
-                <h3 class="mt-5 mb-3">Video Example</h3>
-                <p>Lorem ipsum dolor sit amet, consectetuer adipiscing elit. Aenean commodo ligula eget dolor. Aenean massa. Cum sociis natoque penatibus et magnis dis parturient montes, nascetur ridiculus mus. Donec quam felis, ultricies nec, pellentesque eu, pretium quis, sem. Nulla consequat massa quis enim. </p>
+                <hr />
 
-                <div class="ratio ratio-16x9">
-                    <iframe width="560" height="315" src="https://www.youtube.com/embed/hnCmSXCZEpU" frameborder="0" allow="accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
+                <div class="row">
+                    <h2>Comments</h2>
+
+                    @foreach (var comment in Model.Comments.OrderByDescending(c => c.Created))
+                    {
+                        <div class="offset-1 col-10">
+
+                            <div class="media mb-2">
+                                @if (comment.BlogUser.ImageData is not null)
+                                {
+                                    <img src="@_imageService.DecodeImage(comment.BlogUser.ImageData, comment.BlogUser.ImageType)" class="mr-3 img-fluid" alt="...">
+                                }
+                                else
+                                {
+                                    <img src="~/img/defaultUser.png" class="mr-3 img-fluid" alt="...">
+                                }
+
+                                <div class="media-body">
+                                    <h5 class="mt-0">Created by @comment.BlogUser.FullName on @comment.Created.ToString("MMM dd, yyyy")</h5>
+                                    <p>@comment.CommentBody</p>
+
+                                    @*Ask if this is my comment*@
+                                    @if (comment.Moderated is null && comment.BlogUserId == _userManager.GetUserId(User))
+                                    {
+                                        //this button needs to trigger an Edit modal
+                                        <button class="btn btn-dark px-3 btnEdit" data-bs-toggle="modal" data-UserCommentId="@comment.Id" data-bs-target="#EditModal">Edit</button>
+                                    }
+                                      
+                                </div>
+                            </div>
+                        </div>
+                    }
                 </div>
+
+
+                @*Modals go here*@
+                <div class="modal fade" id="EditModal" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+                    <div class="modal-dialog">
+                        <div class="modal-content">
+                            <div class="modal-header">
+                                <h5 class="modal-title" id="exampleModalLabel">Editing Comment...</h5>
+                            </div>
+                            <div class="modal-body">
+                                <form asp-controller="Comments" asp-action="Edit">
+                                    <input type="hidden" id="ModalCommentId" name="CommentId" />
+                                    <textarea id="ModalCommentBody" name="Body" rows="5" class="w-100"></textarea>
+                                    <button class="btn btn-dark w-100" type="submit">Submit</button>
+                                </form>
+                            </div>
+                            <div class="modal-footer">
+                                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                @section Scripts
+{
+                    <script>
+                        document.querySelectorAll("button.btnEdit").forEach(btn => {
+                            btn.addEventListener("click", function () {
+                                //Transfer the value of the button's data-UserCommentId to the Modals hidden input
+                                document.getElementById("ModalCommentId").value = this.getAttribute('data-UserCommentId');
+                                //I need to use JS to get the comment closest to the button i just clicked
+                                let closestComment = this.closest(".media-body").querySelector("p").textContent;
+                                document.getElementById("ModalCommentBody").textContent = closestComment;
+                            });
+                        });
+                    </script>
+                }
+
+
+
+
+
 
             </div>
 
@@ -122,57 +189,12 @@ export  $initHighlight;
                 <a class="nav-link-next nav-item nav-link rounded-right" href="#">Next<i class="arrow-next fas fa-long-arrow-alt-right"></i></a>
             </nav>
 
-            <div class="blog-comments-section">
-                <div id="disqus_thread"></div>
-                <script>
-                    /**
-                     *  RECOMMENDED CONFIGURATION VARIABLES: EDIT AND UNCOMMENT
-                     *  THE SECTION BELOW TO INSERT DYNAMIC VALUES FROM YOUR
-                     *  PLATFORM OR CMS.
-                     *
-                     *  LEARN WHY DEFINING THESE VARIABLES IS IMPORTANT:
-                     *  https://disqus.com/admin/universalcode/#configuration-variables
-                     */
-                    /*
-                    var disqus_config = function () {
-                        // Replace PAGE_URL with your page's canonical URL variable
-                        this.page.url = PAGE_URL;
 
-                        // Replace PAGE_IDENTIFIER with your page's unique identifier variable
-                        this.page.identifier = PAGE_IDENTIFIER;
-                    };
-                    */
-
-                    (function () {  // REQUIRED CONFIGURATION VARIABLE: EDIT THE SHORTNAME BELOW
-                        var d = document, s = d.createElement('script');
-
-                        // IMPORTANT: Replace 3wmthemes with your forum shortname!
-                        s.src = 'https://3wmthemes.disqus.com/embed.js';
-
-                        s.setAttribute('data-timestamp', +new Date());
-                        (d.head || d.body).appendChild(s);
-                    })();
-                </script>
-                <noscript>
-                    Please enable JavaScript to view the
-                    <a href="https://disqus.com/?ref_noscript" rel="nofollow">
-                        comments powered by Disqus.
-                    </a>
-                </noscript>
-            </div><!--//blog-comments-section-->
 
         </div><!--//container-->
     </article>
 
-    <section class="promo-section theme-bg-light py-5 text-center">
-        <div class="container single-col-max-width">
-            <h2 class="title">Promo Section Heading</h2>
-            <p>You can use this section to promote your side projects etc. Lorem ipsum dolor sit amet, consectetuer adipiscing elit. Aenean commodo ligula eget dolor. Aenean massa. </p>
-            <figure class="promo-figure">
-                <a href="https://made4dev.com" target="_blank"><img class="img-fluid" src="assets/images/promo-banner.jpg" alt="image"></a>
-            </figure>
-        </div><!--//container-->
-    </section><!--//promo-section-->
+
 
     <footer class="footer text-center py-4">
         <small class="copyright">Template Copyright &copy; <a href="https://themes.3rdwavemedia.com/" target="_blank">3rd Wave Media</a></small>
