@@ -9,6 +9,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using System.Threading.Tasks;
+using X.PagedList;
 
 namespace KatyDevBlog.Controllers
 {
@@ -26,10 +27,20 @@ namespace KatyDevBlog.Controllers
             _emailService = emailService;
         }
 
-        public async Task<IActionResult> Index()
+        public async Task<IActionResult> Index(int? page)
         {
-            //Show all blogs
-            return View(await _dbContext.Blogs.ToListAsync()); //ToListAsync lets us enumerate through a list ansycronously
+
+            //Page might be null... if it is I'll update to be 1
+            {
+                var pageNumber = page ?? 1;
+                var pageSize = 5;
+
+                var blogs = await _dbContext.Blogs.OrderBy(b => b.Created).ToPagedListAsync(pageNumber, pageSize);
+                return View(blogs);
+            }
+
+            
+            
         }
         public IActionResult ContactMe()
         {

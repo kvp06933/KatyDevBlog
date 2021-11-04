@@ -1,4 +1,5 @@
 ﻿using MailKit.Net.Smtp;
+using MailKit.Security;
 using Microsoft.AspNetCore.Identity.UI.Services;
 using Microsoft.Extensions.Configuration;
 using MimeKit;
@@ -12,34 +13,38 @@ namespace KatyDevBlog.Services
     public class BasicEmailService : IEmailSender
     {
         private readonly IConfiguration _configuration;
+
         public BasicEmailService(IConfiguration configuration)
         {
             _configuration = configuration;
         }
 
-        public async Task SendEmailAsync(string email, string subject, string htmlMessage)
+        public async Task SendEmailAsync(string emailTo, string subject, string htmlMessage)
         {
-            var newEmail = new MimeMessage();
+            //Step 1: Build the email itself...
+            var email = new MimeMessage();
+            email.Sender = MailboxAddress.Parse(_configuration["SmtpSettings:Email"]);
+            email.To.Add(MailboxAddress.Parse(emailTo));
+            email.Subject = subject;
 
-            //I need to talk to appsettings.json
-            var emailAddress = _configuration["SmtpSettings:Email"];
-            newEmail.Sender = MailboxAddress.Parse(emailAddress);
-            newEmail.To.Add(MailboxAddress.Parse(emailAddress));
-            newEmail.Subject = subject;
+            //Now for the body of the email
+            var builder = new BodyBuilder();
+            builder.HtmlBody = htmlMessage;
 
-            var body = new BodyBuilder();
-            body.HtmlBody = htmlMessage;
-            newEmail.Body = body.ToMessageBody();
+            email.Body = builder.ToMessageBody();
 
-            //Configure the SMTP server to send the newEmail
-            using SmtpClient smtpClient = new();
-            var host = _configuration["SmtpSettings:Host"];
-            var port = Convert.ToInt32(_configuration["SmtpSettings:Port"]);
-            smtpClient.Connect(host, port, MailKit.Security.SecureSocketOptions.StartTls);
-            smtpClient.Authenticate(emailAddress, _configuration["SmtpSettings:Password"]);
-            await smtpClient.SendAsync(newEmail);
+            //Step 2: Configure the smtp server
+            using var smtp = new SmtpClient();
+            smtp.Connect(_configuration["SmtpSettings:Host"],
+                         Convert.ToInt32(_configuration["SmtpSettings:Port"]),
+                         SecureSocketOptions.StartTls);
 
-            smtpClient.Disconnect(true);
+            smtp.Authenticate(_configuration["SmtpSettings:Email"], _configuration["SmtpSettings:Password"]);
+
+            await smtp.SendAsync(email);
+
+            smtp.Disconnect(true);
         }
     }
+
 }

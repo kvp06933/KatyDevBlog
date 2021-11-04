@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Identity;
+﻿using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Identity;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
@@ -31,8 +32,11 @@ namespace KatyDevBlog.Models
                 return $"{FirstName} {LastName}";
             }
         }
+
         public byte[] ImageData { get; set; }
         public string ImageType { get; set; }
-        
+        [NotMapped]
+        public IFormFile Image { get; set; }
+
     }
 }

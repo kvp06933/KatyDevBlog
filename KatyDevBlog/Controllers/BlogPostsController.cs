@@ -79,6 +79,8 @@ namespace KatyDevBlog.Controllers
 
             var blogPost = await _context.BlogPosts
                 .Include(b => b.Blog)
+                .Include(b => b.Comments)
+                .ThenInclude(c => c.BlogUser)
                 .FirstOrDefaultAsync(m => m.Id == id);
             if (blogPost == null)
             {
