@@ -9,12 +9,14 @@ using KatyDevBlog.Models;
 using KatyDevBlog.Services.Interfaces;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Identity.UI.Services;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using Microsoft.AspNetCore.WebUtilities;
 using Microsoft.Extensions.Logging;
+
 
 namespace KatyDevBlog.Areas.Identity.Pages.Account
 {
@@ -31,9 +33,8 @@ namespace KatyDevBlog.Areas.Identity.Pages.Account
             UserManager<BlogUser> userManager,
             SignInManager<BlogUser> signInManager,
             ILogger<RegisterModel> logger,
-            IEmailSender emailSender, 
-            IImageService imageService
-            )
+            IEmailSender emailSender,
+            IImageService imageService)
         {
             _userManager = userManager;
             _signInManager = signInManager;
@@ -53,16 +54,22 @@ namespace KatyDevBlog.Areas.Identity.Pages.Account
         {
             [Required]
             [Display(Name = "First Name")]
-            [StringLength(60, ErrorMessage = "The {0} must be at least {2} and at max {1} characters long.", MinimumLength = 2)]
+            [StringLength(40, ErrorMessage = "The {0} must be at least {2} and no more than {1} characters long", MinimumLength = 2)]
             public string FirstName { get; set; }
+
             [Required]
             [Display(Name = "Last Name")]
-            [StringLength(60, ErrorMessage = "The {0} must be at least {2} and at max {1} characters long.", MinimumLength = 2)]
+            [StringLength(40, ErrorMessage = "The {0} must be at least {2} and no more than {1} characters long", MinimumLength = 2)]
             public string LastName { get; set; }
+
             [Required]
             [Display(Name = "Display Name")]
-            [StringLength(60, ErrorMessage = "The {0} must be at least {2} and at max {1} characters long.", MinimumLength = 2)]
+            [StringLength(60, ErrorMessage = "The {0} must be at least {2} and no more than {1} characters long", MinimumLength = 2)]
             public string DisplayName { get; set; }
+
+            [Display(Name = "User Image")]
+            public IFormFile Image { get; set; }
+
             [Required]
             [EmailAddress]
             [Display(Name = "Email")]
@@ -92,8 +99,9 @@ namespace KatyDevBlog.Areas.Identity.Pages.Account
             ExternalLogins = (await _signInManager.GetExternalAuthenticationSchemesAsync()).ToList();
             if (ModelState.IsValid)
             {
-                var user = new BlogUser { 
-                    UserName = Input.Email, 
+                var user = new BlogUser
+                {
+                    UserName = Input.Email,
                     Email = Input.Email,
                     FirstName = Input.FirstName,
                     LastName = Input.LastName,
@@ -101,6 +109,20 @@ namespace KatyDevBlog.Areas.Identity.Pages.Account
                     ImageData = await _imageService.EncodeImageAsync("defaultUser.png"),
                     ImageType = "png"
                 };
+
+                //If and only if the user chose a custom image will we overwrite the default image
+                if (Input.Image is not null)
+                {
+                    user.ImageData = await _imageService.EncodeImageAsync(Input.Image);
+                    user.ImageType = _imageService.ImageType(Input.Image);
+                }
+
+
+
+
+
+
+
                 var result = await _userManager.CreateAsync(user, Input.Password);
                 if (result.Succeeded)
                 {
@@ -116,6 +138,7 @@ namespace KatyDevBlog.Areas.Identity.Pages.Account
 
                     await _emailSender.SendEmailAsync(Input.Email, "Confirm your email",
                         $"Please confirm your account by <a href='{HtmlEncoder.Default.Encode(callbackUrl)}'>clicking here</a>.");
+
 
                     if (_userManager.Options.SignIn.RequireConfirmedAccount)
                     {

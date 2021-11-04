@@ -3,6 +3,7 @@
 @inject UserManager<BlogUser> _userManager
 @using KatyDevBlog.Services.Interfaces
 @using Microsoft.AspNetCore.Identity
+@using KatyDevBlog.Enums
 
 @{
     ViewData["Title"] = "Details";
@@ -35,21 +36,21 @@
                 <p>You can get more info at <a class="text-link" href="https://highlightjs.org/" target="_blank">https://highlightjs.org/</a>. Lorem ipsum dolor sit amet, consectetuer adipiscing elit. Aenean commodo ligula eget dolor. Aenean massa. Cum sociis natoque penatibus et magnis dis parturient montes, nascetur ridiculus mus. Donec quam felis, ultricies nec, pellentesque eu, pretium quis, sem. Nulla consequat massa quis enim. Donec pede justo, fringilla vel, aliquet nec, vulputate eget, arcu. In enim justo, rhoncus ut, imperdiet a, venenatis vitae, justo. Nullam dictum felis eu pede mollis pretium. Integer tincidunt. Cras dapibus. Vivamus elementum semper nisi. Aenean vulputate eleifend tellus. Aenean leo ligula, porttitor eu, consequat vitae, eleifend ac, enim. </p>
                 <pre>
                 <code>
-function $initHighlight(block, cls) {
-  try {
-    if (cls.search(/\bno\-highlight\b/) != -1)
-      return process(block, true, 0x0F) +
-             ` class="${cls}"`;
-  } catch (e) {
-    /* handle exception */
-  }
-  for (var i = 0 / 2; i < classes.length; i++) {
-    if (checkCondition(classes[i]) === undefined)
-      console.log('undefined');
-  }
-}
+                        function $initHighlight(block, cls) {
+                          try {
+                            if (cls.search(/\bno\-highlight\b/) != -1)
+                              return process(block, true, 0x0F) +
+                                     ` class="${cls}"`;
+                          } catch (e) {
+                            /* handle exception */
+                          }
+                          for (var i = 0 / 2; i < classes.length; i++) {
+                            if (checkCondition(classes[i]) === undefined)
+                              console.log('undefined');
+                          }
+                        }
 
-export  $initHighlight;
+                        export  $initHighlight;
 					    </code>
 				    </pre>
                 <h3 class="mt-5 mb-3">Typography</h3>
@@ -70,7 +71,7 @@ export  $initHighlight;
                     <p class="mb-2">You might not think that programmers are artists, but programming is an extremely creative profession. It's logic-based creativity.</p>
                     <footer class="blockquote-footer mt-0">John Romero</footer>
                 </blockquote>@*I want to either allow the user to leave a comment or prompt
-                    them to login if they want to leave a comment*@
+        them to login if they want to leave a comment*@
 
                 @if (User.Identity.IsAuthenticated)
                 {
@@ -106,6 +107,7 @@ export  $initHighlight;
 
                 <hr />
 
+
                 <div class="row">
                     <h2>Comments</h2>
 
@@ -114,26 +116,46 @@ export  $initHighlight;
                         <div class="offset-1 col-10">
 
                             <div class="media mb-2">
-                                @if (comment.BlogUser.ImageData is not null)
+                                @*@if (comment.BlogUser.ImageData is not null)
                                 {
                                     <img src="@_imageService.DecodeImage(comment.BlogUser.ImageData, comment.BlogUser.ImageType)" class="mr-3 img-fluid" alt="...">
                                 }
                                 else
                                 {
                                     <img src="~/img/defaultUser.png" class="mr-3 img-fluid" alt="...">
-                                }
+                                }*@
 
                                 <div class="media-body">
-                                    <h5 class="mt-0">Created by @comment.BlogUser.FullName on @comment.Created.ToString("MMM dd, yyyy")</h5>
-                                    <p>@comment.CommentBody</p>
 
-                                    @*Ask if this is my comment*@
-                                    @if (comment.Moderated is null && comment.BlogUserId == _userManager.GetUserId(User))
+                                    @*You can either surround each piece of data individually with this type of
+                             logic as I have started doing here
+                                   OR
+                            You can construct the entire comment display based on the state of the comment*@
+
+                                    @if (comment.Moderated is not null)
                                     {
-                                        //this button needs to trigger an Edit modal
+                                        <h5 class="mt-0">Moderated by @comment.Moderator.FullName on @comment.Moderated?.ToString("MMM dd, yyyy")</h5>
+                                        <h6 class="mt-0"><i>Moderated reason: @comment.ModerationType</i></h6>
+                                        <p>@comment.ModeratedBody</p>
+                                    }
+                                    else if (comment.Updated is not null)
+                                    {
+                                        <h5 class="mt-0">Updated by @comment.BlogUser.FullName on @comment.Updated?.ToString("MMM dd, yyyy")</h5>
+                                        <p>@comment.CommentBody</p>
                                         <button class="btn btn-dark px-3 btnEdit" data-bs-toggle="modal" data-UserCommentId="@comment.Id" data-bs-target="#EditModal">Edit</button>
                                     }
-                                      
+                                    else
+                                    {
+                                        <h5 class="mt-0">Created by @comment.BlogUser.FullName on @comment.Created.ToString("MMM dd, yyyy")</h5>
+                                        <p>@comment.CommentBody</p>
+                                        <button class="btn btn-dark px-3 btnEdit" data-bs-toggle="modal" data-UserCommentId="@comment.Id" data-bs-target="#EditModal">Edit</button>
+                                    }
+
+                                    @if (User.IsInRole("Moderator"))
+                                    {
+                                        <button class="btn btn-danger px-3 btnModerate" data-bs-toggle="modal" data-UserCommentId="@comment.Id" data-bs-target="#ModerateModal">Moderate</button>
+                                    }
+
                                 </div>
                             </div>
                         </div>
@@ -142,6 +164,7 @@ export  $initHighlight;
 
 
                 @*Modals go here*@
+
                 <div class="modal fade" id="EditModal" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
                     <div class="modal-dialog">
                         <div class="modal-content">
@@ -162,8 +185,30 @@ export  $initHighlight;
                     </div>
                 </div>
 
+
+                <div class="modal fade" id="ModerateModal" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+                    <div class="modal-dialog">
+                        <div class="modal-content">
+                            <div class="modal-header">
+                                <h5 class="modal-title" id="exampleModalLabel">Moderating Comment...</h5>
+                            </div>
+                            <div class="modal-body">
+                                <form asp-controller="Comments" asp-action="Moderate">
+                                    <input type="hidden" id="ModerateModalCommentId" name="CommentId" />
+                                    <select name="ModerationType" asp-items="@Html.GetEnumSelectList<ModType>()"></select>
+                                    <textarea id="ModalModeratedBody" name="ModeratedBody" rows="5" class="w-100"></textarea>
+                                    <button class="btn btn-danger w-100" type="submit">Submit</button>
+                                </form>
+                            </div>
+                            <div class="modal-footer">
+                                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
                 @section Scripts
-{
+                     {
                     <script>
                         document.querySelectorAll("button.btnEdit").forEach(btn => {
                             btn.addEventListener("click", function () {
@@ -174,8 +219,15 @@ export  $initHighlight;
                                 document.getElementById("ModalCommentBody").textContent = closestComment;
                             });
                         });
+                        document.querySelectorAll("button.btnModerate").forEach(btn => {
+                            btn.addEventListener("click", function () {
+                                document.getElementById("ModerateModalCommentId").value = this.getAttribute('data-UserCommentId');
+                                let closestComment = this.closest(".media-body").querySelector("p").textContent;
+                                document.getElementById("ModalModeratedBody").textContent = closestComment;
+                            });
+                        });
                     </script>
-                }
+                    }
 
 
 

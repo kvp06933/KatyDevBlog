@@ -7,11 +7,11 @@ using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
-namespace KatyDevBlog.Data.Migrations
+namespace KatyDevBlog.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    [Migration("20211022185002_Blog007")]
-    partial class Blog007
+    [Migration("20211103192907_Blog015")]
+    partial class Blog015
     {
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
@@ -35,6 +35,12 @@ namespace KatyDevBlog.Data.Migrations
                         .IsRequired()
                         .HasMaxLength(200)
                         .HasColumnType("character varying(200)");
+
+                    b.Property<byte[]>("ImageData")
+                        .HasColumnType("bytea");
+
+                    b.Property<string>("ImageType")
+                        .HasColumnType("text");
 
                     b.Property<string>("Name")
                         .IsRequired()
@@ -123,6 +129,12 @@ namespace KatyDevBlog.Data.Migrations
                         .HasMaxLength(40)
                         .HasColumnType("character varying(40)");
 
+                    b.Property<byte[]>("ImageData")
+                        .HasColumnType("bytea");
+
+                    b.Property<string>("ImageType")
+                        .HasColumnType("text");
+
                     b.Property<string>("LastName")
                         .IsRequired()
                         .HasMaxLength(40)
@@ -171,6 +183,54 @@ namespace KatyDevBlog.Data.Migrations
                         .HasDatabaseName("UserNameIndex");
 
                     b.ToTable("AspNetUsers");
+                });
+
+            modelBuilder.Entity("KatyDevBlog.Models.Comment", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer")
+                        .HasAnnotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn);
+
+                    b.Property<int>("BlogPostId")
+                        .HasColumnType("integer");
+
+                    b.Property<string>("BlogUserId")
+                        .HasColumnType("text");
+
+                    b.Property<string>("CommentBody")
+                        .HasColumnType("text");
+
+                    b.Property<DateTime>("Created")
+                        .HasColumnType("timestamp without time zone");
+
+                    b.Property<DateTime?>("Deleted")
+                        .HasColumnType("timestamp without time zone");
+
+                    b.Property<DateTime?>("Moderated")
+                        .HasColumnType("timestamp without time zone");
+
+                    b.Property<string>("ModeratedBody")
+                        .HasColumnType("text");
+
+                    b.Property<int>("ModerationType")
+                        .HasColumnType("integer");
+
+                    b.Property<string>("ModeratorId")
+                        .HasColumnType("text");
+
+                    b.Property<DateTime?>("Updated")
+                        .HasColumnType("timestamp without time zone");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("BlogPostId");
+
+                    b.HasIndex("BlogUserId");
+
+                    b.HasIndex("ModeratorId");
+
+                    b.ToTable("Comments");
                 });
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRole", b =>
@@ -314,6 +374,29 @@ namespace KatyDevBlog.Data.Migrations
                     b.Navigation("Blog");
                 });
 
+            modelBuilder.Entity("KatyDevBlog.Models.Comment", b =>
+                {
+                    b.HasOne("KatyDevBlog.Models.BlogPost", "BlogPost")
+                        .WithMany("Comments")
+                        .HasForeignKey("BlogPostId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("KatyDevBlog.Models.BlogUser", "BlogUser")
+                        .WithMany()
+                        .HasForeignKey("BlogUserId");
+
+                    b.HasOne("KatyDevBlog.Models.BlogUser", "Moderator")
+                        .WithMany()
+                        .HasForeignKey("ModeratorId");
+
+                    b.Navigation("BlogPost");
+
+                    b.Navigation("BlogUser");
+
+                    b.Navigation("Moderator");
+                });
+
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRoleClaim<string>", b =>
                 {
                     b.HasOne("Microsoft.AspNetCore.Identity.IdentityRole", null)
@@ -368,6 +451,11 @@ namespace KatyDevBlog.Data.Migrations
             modelBuilder.Entity("KatyDevBlog.Models.Blog", b =>
                 {
                     b.Navigation("BlogPosts");
+                });
+
+            modelBuilder.Entity("KatyDevBlog.Models.BlogPost", b =>
+                {
+                    b.Navigation("Comments");
                 });
 #pragma warning restore 612, 618
         }

@@ -35,6 +35,8 @@ namespace KatyDevBlog.Services
             await SeedRolesAsync();
             //Create(seed) 2 roles and assign the roles
             await SeedUsersAsync();
+
+            await SeedBlogsAsync();
             
             
 
@@ -95,6 +97,25 @@ namespace KatyDevBlog.Services
             await _roleManager.CreateAsync(adminRole);
             var moderatorRole = new IdentityRole("Moderator");
             await _roleManager.CreateAsync(moderatorRole);
+        }
+
+        private async Task SeedBlogsAsync()
+        {
+            if (_dbContext.Blogs.Any())
+                return;
+            for(var blogs = 1; blogs <=20; blogs++){
+                _dbContext.Add(new Blog()
+                            {
+                                Name = $"Blog for Application {blogs}",
+                                Description = $"Everything I learned while building application {blogs}",
+                                Created = DateTime.Now.AddDays(blogs),
+                                ImageData = await _imageService.EncodeImageAsync("newblog.png"),
+                                ImageType = "png",
+
+                            });
+            }
+            await _dbContext.SaveChangesAsync();
+            
         }
        
             

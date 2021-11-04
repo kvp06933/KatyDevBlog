@@ -3,15 +3,17 @@ using System;
 using KatyDevBlog.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
 namespace KatyDevBlog.Data.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20211103230149_Blog017")]
+    partial class Blog017
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -65,6 +67,9 @@ namespace KatyDevBlog.Data.Migrations
                     b.Property<int>("BlogId")
                         .HasColumnType("integer");
 
+                    b.Property<string>("BlogUserId")
+                        .HasColumnType("text");
+
                     b.Property<string>("Content")
                         .IsRequired()
                         .HasColumnType("text");
@@ -95,6 +100,8 @@ namespace KatyDevBlog.Data.Migrations
                     b.HasKey("Id");
 
                     b.HasIndex("BlogId");
+
+                    b.HasIndex("BlogUserId");
 
                     b.ToTable("BlogPosts");
                 });
@@ -369,7 +376,13 @@ namespace KatyDevBlog.Data.Migrations
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
+                    b.HasOne("KatyDevBlog.Models.BlogUser", "BlogUser")
+                        .WithMany()
+                        .HasForeignKey("BlogUserId");
+
                     b.Navigation("Blog");
+
+                    b.Navigation("BlogUser");
                 });
 
             modelBuilder.Entity("KatyDevBlog.Models.Comment", b =>
