@@ -2,9 +2,9 @@
 using Microsoft.EntityFrameworkCore.Migrations;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
-namespace KatyDevBlog.Migrations
+namespace KatyDevBlog.Data.Migrations
 {
-    public partial class Blog015 : Migration
+    public partial class Blog018 : Migration
     {
         protected override void Up(MigrationBuilder migrationBuilder)
         {
@@ -190,11 +190,18 @@ namespace KatyDevBlog.Migrations
                     ReadyStatus = table.Column<int>(type: "integer", nullable: false),
                     Slug = table.Column<string>(type: "text", nullable: true),
                     ImageData = table.Column<byte[]>(type: "bytea", nullable: true),
-                    ImageType = table.Column<string>(type: "text", nullable: true)
+                    ImageType = table.Column<string>(type: "text", nullable: true),
+                    BlogUserId = table.Column<string>(type: "text", nullable: true)
                 },
                 constraints: table =>
                 {
                     table.PrimaryKey("PK_BlogPosts", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_BlogPosts_AspNetUsers_BlogUserId",
+                        column: x => x.BlogUserId,
+                        principalTable: "AspNetUsers",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Restrict);
                     table.ForeignKey(
                         name: "FK_BlogPosts_Blogs_BlogId",
                         column: x => x.BlogId,
@@ -286,6 +293,11 @@ namespace KatyDevBlog.Migrations
                 column: "BlogId");
 
             migrationBuilder.CreateIndex(
+                name: "IX_BlogPosts_BlogUserId",
+                table: "BlogPosts",
+                column: "BlogUserId");
+
+            migrationBuilder.CreateIndex(
                 name: "IX_Comments_BlogPostId",
                 table: "Comments",
                 column: "BlogPostId");
@@ -325,10 +337,10 @@ namespace KatyDevBlog.Migrations
                 name: "AspNetRoles");
 
             migrationBuilder.DropTable(
-                name: "AspNetUsers");
+                name: "BlogPosts");
 
             migrationBuilder.DropTable(
-                name: "BlogPosts");
+                name: "AspNetUsers");
 
             migrationBuilder.DropTable(
                 name: "Blogs");

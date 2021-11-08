@@ -9,7 +9,6 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-
 namespace KatyDevBlog.Services
 {
     //Responsibe for making sure thee is at least one user and some data in the database
@@ -19,12 +18,14 @@ namespace KatyDevBlog.Services
         private readonly IImageService _imageService;
         private readonly UserManager<BlogUser> _userManager;
         private readonly RoleManager<IdentityRole> _roleManager;
-        public DataService(ApplicationDbContext dbContext, IImageService imageService, UserManager<BlogUser> userManager, RoleManager<IdentityRole> roleManager)
+        private readonly ISlugService _slugService;
+        public DataService(ApplicationDbContext dbContext, IImageService imageService, UserManager<BlogUser> userManager, RoleManager<IdentityRole> roleManager, ISlugService slugService)
         {
             _dbContext = dbContext;
             _imageService = imageService;
             _userManager = userManager;
             _roleManager = roleManager;
+            _slugService = slugService;
         }
 
         //I'm free to use _dbContext anywhere inside the class...
@@ -37,8 +38,8 @@ namespace KatyDevBlog.Services
             await SeedUsersAsync();
 
             await SeedBlogsAsync();
-            
-            
+
+            await SeedBlogPostsAsync();
 
             
         }
@@ -116,6 +117,31 @@ namespace KatyDevBlog.Services
             }
             await _dbContext.SaveChangesAsync();
             
+        }
+        private async Task SeedBlogPostsAsync()
+        {
+            if (_dbContext.BlogPosts.Any())
+                return;
+
+            var blogId = (await _dbContext.Blogs.AsNoTracking().OrderBy(b => b.Created).FirstOrDefaultAsync()).Id;
+            for (var loop = 1; loop <= 20; loop++)
+            {
+                var title = $"Post Number {loop}";
+                _dbContext.Add(new BlogPost()
+                {
+                    BlogId = blogId,
+                    Title = title,
+                    ReadyStatus = Enums.ReadyState.Ready,
+                    Slug = _slugService.UrlFriendly(title),
+                    Abstract = $"Abstract for Post Number {loop}",
+                    Content = $"Content of Post Number {loop}",
+                    Created = DateTime.Now.AddDays(-loop),
+                    ImageData = await _imageService.EncodeImageAsync("newblog.png"),
+                    ImageType = "png",
+
+                }) ;
+            }
+            await _dbContext.SaveChangesAsync();
         }
        
             

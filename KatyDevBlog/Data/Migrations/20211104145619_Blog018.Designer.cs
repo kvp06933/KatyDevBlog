@@ -7,11 +7,11 @@ using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
-namespace KatyDevBlog.Migrations
+namespace KatyDevBlog.Data.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    [Migration("20211103230040_Blog016")]
-    partial class Blog016
+    [Migration("20211104145619_Blog018")]
+    partial class Blog018
     {
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {

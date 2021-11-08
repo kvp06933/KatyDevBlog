@@ -13,7 +13,11 @@
 
 
 <div>
-    <a asp-action="Edit" asp-route-id="@Model.Id">Edit</a> |
+    @if (User.IsInRole("Administrator"))
+    {
+        <a asp-action="Edit" asp-route-id="@Model.Id">Edit</a>
+    }
+
     <a asp-action="Index">Back to List</a>
 </div>
 <div class="main-wrapper">
@@ -236,10 +240,7 @@
 
             </div>
 
-            <nav class="blog-nav nav nav-justified my-5">
-                <a class="nav-link-prev nav-item nav-link rounded-left" href="#">Previous<i class="arrow-prev fas fa-long-arrow-alt-left"></i></a>
-                <a class="nav-link-next nav-item nav-link rounded-right" href="#">Next<i class="arrow-next fas fa-long-arrow-alt-right"></i></a>
-            </nav>
+            
 
 
 
@@ -248,8 +249,6 @@
 
 
 
-    <footer class="footer text-center py-4">
-        <small class="copyright">Template Copyright &copy; <a href="https://themes.3rdwavemedia.com/" target="_blank">3rd Wave Media</a></small>
-    </footer>
+    
 
 </div><!--//main-wrapper-->
