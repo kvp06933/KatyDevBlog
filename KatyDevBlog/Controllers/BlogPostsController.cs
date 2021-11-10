@@ -29,31 +29,36 @@ namespace KatyDevBlog.Controllers
             _slugService = slugService;
             _searchService = searchService;
         }
-        
-        
+
+        [ValidateAntiForgeryToken]
         public async Task<IActionResult> SearchPosts(int? page, string searchTerm)
         {
-
             //I need to have a good page number and page might come in as null
             var pageNumber = page ?? 1;
             var pageSize = 7;
 
-            //In order to propogate the search term from one page to the next I will
+            //In order to propagate the search term from one page to the next I will
             //use a ViewData to push the term into the view
             ViewData["SearchTerm"] = searchTerm;
+
             var blogPosts = await _searchService.SearchAsync(searchTerm);
-            return View("SearchPosts", await blogPosts.ToPagedListAsync(pageNumber, pageSize));
+            return View(await blogPosts.ToPagedListAsync(pageNumber, pageSize));
         }
 
         public async Task<IActionResult> ChildIndex(int blogId)
         {
+            //I don't want to get all of the BlogPosts....
+            //I want to get all of the BlogPosts where the BlogId = blogId
+            //Also...I only want to grab production ready BlogPosts
             var blogPosts = _context.BlogPosts
-                .Include(b=>b.Blog)//Navigation property- drag parent reference along with child
+                .Include(b => b.Blog)
                 .Where(b => b.BlogId == blogId && b.ReadyStatus == ReadyState.Ready)
-                .OrderByDescending(b =>b.Created);
+                .OrderByDescending(b => b.Created);
 
             return View(await blogPosts.ToListAsync());
+
         }
+
         // GET: BlogPosts
         public async Task<IActionResult> Index()
         {
@@ -61,32 +66,34 @@ namespace KatyDevBlog.Controllers
                 .Include(b => b.Blog)
                 .Where(b => b.ReadyStatus == ReadyState.Ready)
                 .OrderByDescending(b => b.Created);
-            ;
+
             return View(await applicationDbContext.ToListAsync());
         }
+
         public async Task<IActionResult> Preview()
         {
-            var applicationDbContext = _context.BlogPosts
-                .Include(b => b.Blog)
-                .Where(b => b.ReadyStatus == ReadyState.InPreview)
-                .OrderByDescending(b => b.Created);
-            ;
-            return View("Index", await applicationDbContext.ToListAsync());
+            var blogPosts = _context.BlogPosts
+               .Include(b => b.Blog)
+               .Where(b => b.ReadyStatus == ReadyState.InPreview)
+               .OrderByDescending(b => b.Created);
+
+            return View("Index", await blogPosts.ToListAsync());
         }
 
-        // GET: BlogPosts/Details/5
-        public async Task<IActionResult> Details(int? id)
+        public async Task<IActionResult> Details(string slug)
         {
-            if (id == null)
+            if (string.IsNullOrEmpty(slug))
             {
                 return NotFound();
             }
 
             var blogPost = await _context.BlogPosts
                 .Include(b => b.Blog)
+                .Include(b => b.Tags)
                 .Include(b => b.Comments)
                 .ThenInclude(c => c.BlogUser)
-                .FirstOrDefaultAsync(m => m.Id == id);
+                .FirstOrDefaultAsync(m => m.Slug == slug);
+
             if (blogPost == null)
             {
                 return NotFound();
@@ -95,22 +102,40 @@ namespace KatyDevBlog.Controllers
             return View(blogPost);
         }
 
-        // GET: BlogPosts/Create
-        //[Authorize(Roles = "Administrator")]
-        public IActionResult Create(int? id) 
+        public async Task<IActionResult> TagIndex(string tag, int? page)
         {
-            //If i am given an id
-            //1. It represents the BlogPost.BlogId
-            //2. I dont show the select list to the user
-            //3. I embed the incoming id into the form somehow so that it's treated as the BlogId
-            if(id is not null)
+            //Start with my pageing data
+            var pageNumber = page ?? 1;
+            var pageSize = 6;
+
+            var allBlogPostIds = _context.Tags.Where(t => t.Text.ToLower() == tag.ToLower())
+                                              .Select(t => t.BlogPostId);
+
+            var blogPosts = await _context.BlogPosts
+                                        .Where(b => allBlogPostIds.Contains(b.Id))
+                                        .OrderByDescending(b => b.Created)
+                                        .ToPagedListAsync(pageNumber, pageSize);
+
+            ViewData["Tag"] = tag;
+            return View(blogPosts);
+        }
+
+
+
+        // GET: BlogPosts/Create
+        //[Authorize(Roles ="Administrator")]
+        public IActionResult Create(int? blogId)
+        {
+            if (blogId is not null)
             {
-                BlogPost newBlogPost = new() //new up an instance of type BlogPost with newBlogPost
+                BlogPost newBlogPost = new()
                 {
-                    BlogId = (int)id //Foreign key
+                    BlogId = (int)blogId
                 };
+
                 return View(newBlogPost);
             }
+
             ViewData["BlogId"] = new SelectList(_context.Blogs, "Id", "Name");
             return View();
         }
@@ -120,14 +145,16 @@ namespace KatyDevBlog.Controllers
         // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Create([Bind("BlogId,Title,Abstract,Content,Image,ReadyStatus")] BlogPost blogPost)
+        public async Task<IActionResult> Create([Bind("BlogId,Title,Abstract,Content,ReadyStatus,Image")] BlogPost blogPost, List<string> tagValues)
         {
             if (ModelState.IsValid)
             {
+                //Let's create and check the slug for uniqueness
                 var slug = _slugService.UrlFriendly(blogPost.Title);
                 if (!_slugService.IsUnique(slug))
                 {
-                    ModelState.AddModelError("Title", "The title is already in use.");
+                    //Create a custom Model Error and complain to the user
+                    ModelState.AddModelError("Title", "Error: Title has already been used.");
                     return View(blogPost);
                 }
                 else
@@ -135,17 +162,12 @@ namespace KatyDevBlog.Controllers
                     blogPost.Slug = slug;
                 }
 
-                if (blogPost.Image is null)
-                {
-                    blogPost.ImageData = await _imageService.EncodeImageAsync("newpost.jpg");
-                    blogPost.ImageType = "jpg";
-                }
-                else
+                //Either record the incoming image or use the default image
+                if (blogPost.Image is not null)
                 {
                     if (!_imageService.ValidImage(blogPost.Image))
                     {
-                        //We need to add a custom Model Error and inform the user
-                        ModelState.AddModelError("Image", "Please choose a valid image");
+                        ModelState.AddModelError("Image", "Please choose a valid image.");
                         return View(blogPost);
                     }
                     else
@@ -154,12 +176,31 @@ namespace KatyDevBlog.Controllers
                         blogPost.ImageType = _imageService.ImageType(blogPost.Image);
                     }
                 }
+                else
+                {
+                    blogPost.ImageData = await _imageService.EncodeImageAsync("defaultBlogPost.jpg");
+                    blogPost.ImageType = "jpg";
+                }
+
                 blogPost.Created = DateTime.Now;
-                blogPost.Updated = DateTime.Now;
+
                 _context.Add(blogPost);
                 await _context.SaveChangesAsync();
+
+                foreach (var tag in tagValues)
+                {
+                    _context.Add(new Tag()
+                    {
+                        BlogPostId = blogPost.Id,
+                        Text = tag
+                    });
+                }
+
+                await _context.SaveChangesAsync();
+
                 return RedirectToAction(nameof(Index));
             }
+
             ViewData["BlogId"] = new SelectList(_context.Blogs, "Id", "Name", blogPost.BlogId);
             return View(blogPost);
         }
@@ -178,7 +219,7 @@ namespace KatyDevBlog.Controllers
             {
                 return NotFound();
             }
-            ViewData["BlogId"] = new SelectList(_context.Blogs, "Id", "Name", blogPost.BlogId);
+            ViewData["BlogId"] = new SelectList(_context.Blogs, "Id", "Description", blogPost.BlogId);
             return View(blogPost);
         }
 
@@ -187,7 +228,7 @@ namespace KatyDevBlog.Controllers
         // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Edit(int id, [Bind("Id,BlogId,Title,Abstract,Content,Created,Updated,Slug,ReadyStatus,ImageType,ImageData,Image")] BlogPost blogPost)
+        public async Task<IActionResult> Edit(int id, [Bind("Id,BlogId,Title,Abstract,Content,Created,ReadyStatus,Slug,ImageData,ImageType,Image")] BlogPost blogPost)
         {
             if (id != blogPost.Id)
             {
@@ -196,38 +237,24 @@ namespace KatyDevBlog.Controllers
 
             if (ModelState.IsValid)
             {
-                var slug = _slugService.UrlFriendly(blogPost.Title);
-                if(slug != blogPost.Slug)
-                {
-                    if (!_slugService.IsUnique(slug))
-                    {
-                        ModelState.AddModelError("Title", "The title is already in use.");
-                        return View(blogPost);
-                    }
-                    else
-                    {
-                        blogPost.Slug = slug;
-                    }
-                }
-                
-
                 try
                 {
-                    //Did the user choose a NEW image
-                    if (blogPost.Image is not null)
+                    //In the Edit we have to make sure that the Title actually changed before checking slug uniqueness                    
+                    var slug = _slugService.UrlFriendly(blogPost.Title);
+                    if (slug != blogPost.Slug)
                     {
-                        //If the image fails validation, complain to the user
-                        if (!_imageService.ValidImage(blogPost.Image))
+                        if (!_slugService.IsUnique(slug))
                         {
-                            ModelState.AddModelError("Image", "There was a problem with the image, please choose another one.");
+                            //Create a custom Model Error and complain to the user
+                            ModelState.AddModelError("Title", "Error: Title has already been used.");
                             return View(blogPost);
                         }
                         else
                         {
-                            blogPost.ImageData = await _imageService.EncodeImageAsync(blogPost.Image);
-                            blogPost.ImageType = _imageService.ImageType(blogPost.Image);
+                            blogPost.Slug = slug;
                         }
                     }
+
                     blogPost.Updated = DateTime.Now;
                     _context.Update(blogPost);
                     await _context.SaveChangesAsync();
@@ -245,7 +272,7 @@ namespace KatyDevBlog.Controllers
                 }
                 return RedirectToAction(nameof(Index));
             }
-            ViewData["BlogId"] = new SelectList(_context.Blogs, "Id", "Name", blogPost.BlogId);
+            ViewData["BlogId"] = new SelectList(_context.Blogs, "Id", "Description", blogPost.BlogId);
             return View(blogPost);
         }
 
