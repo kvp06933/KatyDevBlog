@@ -14,7 +14,7 @@ using X.PagedList;
 using System.Collections.Generic;
 using Microsoft.AspNetCore.Identity;
 
-namespace KatyDevBlog.Controllers
+namespace KatyDevBlog.Services
 {
     public class DataService
     {
