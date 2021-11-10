@@ -1,4 +1,5 @@
 
+using KatyDevBlog.Controllers;
 using KatyDevBlog.Services;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Configuration;
