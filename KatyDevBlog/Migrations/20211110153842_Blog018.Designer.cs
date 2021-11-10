@@ -3,15 +3,17 @@ using System;
 using KatyDevBlog.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
-namespace KatyDevBlog.Data.Migrations
+namespace KatyDevBlog.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20211110153842_Blog018")]
+    partial class Blog018
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -236,6 +238,28 @@ namespace KatyDevBlog.Data.Migrations
                     b.ToTable("Comments");
                 });
 
+            modelBuilder.Entity("KatyDevBlog.Models.Tag", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer")
+                        .HasAnnotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn);
+
+                    b.Property<int>("BlogPostId")
+                        .HasColumnType("integer");
+
+                    b.Property<string>("Text")
+                        .IsRequired()
+                        .HasMaxLength(20)
+                        .HasColumnType("character varying(20)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("BlogPostId");
+
+                    b.ToTable("Tags");
+                });
+
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRole", b =>
                 {
                     b.Property<string>("Id")
@@ -406,6 +430,17 @@ namespace KatyDevBlog.Data.Migrations
                     b.Navigation("Moderator");
                 });
 
+            modelBuilder.Entity("KatyDevBlog.Models.Tag", b =>
+                {
+                    b.HasOne("KatyDevBlog.Models.BlogPost", "BlogPost")
+                        .WithMany("Tags")
+                        .HasForeignKey("BlogPostId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("BlogPost");
+                });
+
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRoleClaim<string>", b =>
                 {
                     b.HasOne("Microsoft.AspNetCore.Identity.IdentityRole", null)
@@ -465,6 +500,8 @@ namespace KatyDevBlog.Data.Migrations
             modelBuilder.Entity("KatyDevBlog.Models.BlogPost", b =>
                 {
                     b.Navigation("Comments");
+
+                    b.Navigation("Tags");
                 });
 #pragma warning restore 612, 618
         }

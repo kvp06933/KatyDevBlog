@@ -57,5 +57,7 @@ namespace KatyDevBlog.Models
         public virtual BlogUser BlogUser { get; set; }
         //Children
         public ICollection<Comment> Comments { get; set; } = new HashSet<Comment>();
+        public ICollection<Tag> Tags { get; set; } = new HashSet<Tag>();
+
     }
 }

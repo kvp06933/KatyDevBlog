@@ -1,4 +1,5 @@
 
+using KatyDevBlog.Controllers;
 using KatyDevBlog.Data;
 using KatyDevBlog.Models;
 using KatyDevBlog.Services;
@@ -51,6 +52,7 @@ namespace KatyDevBlog
             services.AddTransient<ISlugService, BasicSlugService>();
             services.AddTransient<IEmailSender, BasicEmailService>();
             services.AddScoped<SearchService>();
+            services.AddScoped<BlogService>();
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
