@@ -22,7 +22,8 @@
                 <div class="col-12 col-md-2">
                     <button type="submit" class="btn btn-primary">Subscribe</button>
                 </div>
-            </form>--><!--//signup-form-->
+            </form>-->
+    <!--//signup-form-->
         <!--</div>--><!--//single-form-max-width-->
     </div><!--//container-->
 </section>
@@ -37,7 +38,7 @@
                         <div class="card-body">
                             <h5 class="card-title"><a class="theme-link" asp-controller="BlogPosts" asp-action="ChildIndex" asp-route-blogId="@blog.Id">@blog.Name</a></h5>
                             <p class="card-text">@blog.Description</p>
-                            <p class="mb-0"><a class="text-link" href="blog-post.html">Read more &rarr;</a></p>
+                            <p class="mb-0"><a class="text-link" asp-controller="BlogPosts" asp-action="ChildIndex" asp-route-blogId="@blog.Id">Read more &rarr;</a></p>
 
                         </div>
                         <div class="card-footer">

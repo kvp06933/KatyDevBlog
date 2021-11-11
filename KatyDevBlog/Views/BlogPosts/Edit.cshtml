@@ -18,7 +18,7 @@
             <input type="hidden" asp-for="ImageData" />
             <input type="hidden" asp-for="ImageType" />
             <input type="hidden" asp-for="Slug" />
-            
+
             <div class="form-group">
                 <label asp-for="Title" class="control-label"></label>
                 <input asp-for="Title" class="form-control" />
@@ -44,8 +44,40 @@
                 <input type="file" accept=".png,.jpg,.jpeg" asp-for="Image" class="form-control" />
                 <span asp-validation-for="Image" class="text-danger"></span>
             </div>
-            
 
+            @*Add a section for Tags*@
+            <div class="form-group pb-5">
+                <div class="row">
+                    <div class="col-6">
+                        <label class="control-label">Manage Tags</label>
+                    </div>
+                </div>
+
+                <div class="row">
+                    <div class="col-6">
+                        <div class="row mb-2">
+                            <div class="col">
+                                <input id="tagEntry" type="text" class="form-control" />
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col">
+                                <button type="button" class="btn btn-dark btn-sm w-100" name="Add" onclick="AddTag()">Add</button>
+                            </div>
+                            <div class="col">
+                                <button type="button" class="btn btn-dark btn-sm w-100" name="Delete" onclick="DeleteTag()">Delete</button>
+                            </div>
+                        </div>
+
+                    </div>
+                    <div class="col-6">
+                        <select class="w-100" name="TagValues" id="TagList" multiple>
+                            @*<option></option>*@
+                        </select>
+                    </div>
+                </div>
+
+            </div>
             <div class="form-group">
                 <input type="submit" value="Save" class="btn btn-primary" />
             </div>
@@ -56,7 +88,20 @@
 <div>
     <a asp-action="Index">Back to List</a>
 </div>
-
 @section Scripts {
     @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+
+    <script src="~/js/CustomTags.js"></script>
+
+    <script>
+        let fileInput = document.getElementById("Image");
+        fileInput.onchange = evt => {
+            const [file] = fileInput.files
+            if (file) {
+                document.getElementById("imgPreview").src = URL.createObjectURL(file);
+            }
+        }
+    </script>
+
 }
+
