@@ -8,6 +8,7 @@ using Microsoft.EntityFrameworkCore;
 using KatyDevBlog.Data;
 using KatyDevBlog.Models;
 using KatyDevBlog.Services.Interfaces;
+using X.PagedList;
 
 namespace KatyDevBlog.Controllers
 {
@@ -24,13 +25,21 @@ namespace KatyDevBlog.Controllers
         }
 
         // GET: Blogs
-        public async Task<IActionResult> Index()
+        public async Task<IActionResult> Index(int? page)
         {
-            return View(await _context.Blogs.ToListAsync());
-        }
 
-        // GET: Blogs/Details/5
-        public async Task<IActionResult> Details(int? id)
+            //Page might be null... if it is I'll update to be 1
+            {
+                var pageNumber = page ?? 1;
+                var pageSize = 5;
+
+                var blogs = await _context.Blogs.OrderBy(b => b.Created).ToPagedListAsync(pageNumber, pageSize);
+                return View(blogs);
+
+            }
+        }
+                // GET: Blogs/Details/5
+                public async Task<IActionResult> Details(int? id)
         {
             if (id == null)
             {
