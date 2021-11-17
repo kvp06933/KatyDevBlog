@@ -45,6 +45,9 @@ namespace KatyDevBlog.Migrations
                         .HasMaxLength(100)
                         .HasColumnType("character varying(100)");
 
+                    b.Property<string>("Slug")
+                        .HasColumnType("text");
+
                     b.HasKey("Id");
 
                     b.ToTable("Blogs");

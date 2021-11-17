@@ -10,8 +10,8 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace KatyDevBlog.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    [Migration("20211110162028_Blog020")]
-    partial class Blog020
+    [Migration("20211116173034_fixed")]
+    partial class @fixed
     {
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
@@ -46,6 +46,9 @@ namespace KatyDevBlog.Migrations
                         .IsRequired()
                         .HasMaxLength(100)
                         .HasColumnType("character varying(100)");
+
+                    b.Property<string>("Slug")
+                        .HasColumnType("text");
 
                     b.HasKey("Id");
 

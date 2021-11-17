@@ -123,7 +123,7 @@ namespace KatyDevBlog.Controllers
 
 
         // GET: BlogPosts/Create
-        //[Authorize(Roles ="Administrator")]
+        [Authorize(Roles ="Administrator")]
         public IActionResult Create(int? blogId)
         {
             if (blogId is not null)
@@ -178,8 +178,8 @@ namespace KatyDevBlog.Controllers
                 }
                 else
                 {
-                    blogPost.ImageData = await _imageService.EncodeImageAsync("defaultBlogPost.jpg");
-                    blogPost.ImageType = "jpg";
+                    blogPost.ImageData = await _imageService.EncodeImageAsync("newpost.png");
+                    blogPost.ImageType = "png";
                 }
 
                 blogPost.Created = DateTime.Now;
@@ -206,7 +206,7 @@ namespace KatyDevBlog.Controllers
         }
 
         // GET: BlogPosts/Edit/5
-        //[Authorize(Roles = "Administrator")]
+        [Authorize(Roles = "Administrator")]
         public async Task<IActionResult> Edit(int? id)
         {
             if (id == null)
@@ -277,7 +277,7 @@ namespace KatyDevBlog.Controllers
         }
 
         // GET: BlogPosts/Delete/5
-        //[Authorize(Roles = "Administrator")]
+        [Authorize(Roles = "Administrator")]
         public async Task<IActionResult> Delete(int? id)
         {
             if (id == null)

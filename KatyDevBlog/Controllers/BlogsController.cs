@@ -9,6 +9,7 @@ using KatyDevBlog.Data;
 using KatyDevBlog.Models;
 using KatyDevBlog.Services.Interfaces;
 using X.PagedList;
+using Microsoft.AspNetCore.Authorization;
 
 namespace KatyDevBlog.Controllers
 {
@@ -16,12 +17,14 @@ namespace KatyDevBlog.Controllers
     {
         private readonly ApplicationDbContext _context; //Class Member
         private readonly IImageService _imageService;
+        private readonly ISlugService _slugService;
 
-        public BlogsController(ApplicationDbContext context, IImageService imageService)
+        public BlogsController(ApplicationDbContext context, IImageService imageService, ISlugService slugService)
         {
             //Dependency Injection
             _context = context;// constructor
             _imageService = imageService;
+            _slugService = slugService;
         }
 
         // GET: Blogs
@@ -39,15 +42,15 @@ namespace KatyDevBlog.Controllers
             }
         }
                 // GET: Blogs/Details/5
-                public async Task<IActionResult> Details(int? id)
+                public async Task<IActionResult> Details(string slug)
         {
-            if (id == null)
+            if (string.IsNullOrEmpty(slug))
             {
                 return NotFound();
             }
 
             var blog = await _context.Blogs
-                .FirstOrDefaultAsync(m => m.Id == id);
+                .FirstOrDefaultAsync(m => m.Slug == slug);
             if (blog == null)
             {
                 return NotFound();
@@ -57,6 +60,7 @@ namespace KatyDevBlog.Controllers
         }
 
         // GET: Blogs/Create
+        [Authorize (Roles = "Administrator")]
         public IActionResult Create()
         {
             return View();
@@ -65,12 +69,25 @@ namespace KatyDevBlog.Controllers
         // POST: Blogs/Create
         // To protect from overposting attacks, enable the specific properties you want to bind to.
         // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
+        
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Create([Bind("Name,Description,Image")] Blog blog)
         {
             if (ModelState.IsValid)
             {
+                //Let's create and check the slug for uniqueness
+                var slug = _slugService.UrlFriendly(blog.Name);
+                if (!_slugService.IsUnique(slug))
+                {
+                    //Create a custom Model Error and complain to the user
+                    ModelState.AddModelError("Title", "Error: Title has already been used.");
+                    return View(blog);
+                }
+                else
+                {
+                    blog.Slug = slug;
+                }
                 if (blog.Image is null)
                 {
                     blog.ImageData = await _imageService.EncodeImageAsync("newblog.png");
@@ -102,6 +119,7 @@ namespace KatyDevBlog.Controllers
         }
 
         // GET: Blogs/Edit/5
+        [Authorize(Roles = "Administrator")]
         public async Task<IActionResult> Edit(int? id)
         {
             if (id == null)
@@ -169,6 +187,7 @@ namespace KatyDevBlog.Controllers
         }
 
         // GET: Blogs/Delete/5
+        [Authorize(Roles = "Administrator")]
         public async Task<IActionResult> Delete(int? id)
         {
             if (id == null)

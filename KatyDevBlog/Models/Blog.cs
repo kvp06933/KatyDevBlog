@@ -9,12 +9,7 @@ using System.Threading.Tasks;
 namespace KatyDevBlog.Models
 {
     //This represents a category of individual Posts or BlogPosts
-    //Security in MVC <-- Blog
-        //Role based security <-- Posts
-        //Front end security  <-- Posts
-        //Tag
-            //Comment1  <-- Comments 
-            //Comment2  <-- Comments 
+    
     public class Blog
     {
         //Non-descriptive administrative property
@@ -30,6 +25,9 @@ namespace KatyDevBlog.Models
 
         [DataType(DataType.Date)]
         public DateTime Created { get; set; }
+
+        //This will be the title run through a formatter
+        public string Slug { get; set; }
 
         //Add image and image type property
         public byte[] ImageData { get; set; }
