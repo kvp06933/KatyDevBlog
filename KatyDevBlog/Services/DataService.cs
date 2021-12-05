@@ -37,9 +37,9 @@ namespace KatyDevBlog.Services
             //Create(seed) 2 roles and assign the roles
             await SeedUsersAsync();
 
-            await SeedBlogsAsync();
+            //await SeedBlogsAsync();
 
-            await SeedBlogPostsAsync();
+            //await SeedBlogPostsAsync();
 
 
         }
@@ -100,50 +100,50 @@ namespace KatyDevBlog.Services
             await _roleManager.CreateAsync(moderatorRole);
         }
 
-        private async Task SeedBlogsAsync()
-        {
-            if (_dbContext.Blogs.Any())
-                return;
-            for (var blogs = 1; blogs <= 20; blogs++)
-            {
-                _dbContext.Add(new Blog()
-                {
-                    Name = $"Blog for Application {blogs}",
-                    Description = $"Everything I learned while building application {blogs}",
-                    Created = DateTime.Now.AddDays(blogs),
-                    ImageData = await _imageService.EncodeImageAsync("newblog.png"),
-                    ImageType = "png",
+        //private async Task SeedBlogsAsync()
+        //{
+        //    if (_dbContext.Blogs.Any())
+        //        return;
+        //    for (var blogs = 1; blogs <= 20; blogs++)
+        //    {
+        //        _dbContext.Add(new Blog()
+        //        {
+        //            Name = $"Blog for Application {blogs}",
+        //            Description = $"Everything I learned while building application {blogs}",
+        //            Created = DateTime.Now.AddDays(blogs),
+        //            ImageData = await _imageService.EncodeImageAsync("newblog.png"),
+        //            ImageType = "png",
 
-                });
-            }
-            await _dbContext.SaveChangesAsync();
+        //        });
+        //    }
+        //    await _dbContext.SaveChangesAsync();
 
-        }
-        private async Task SeedBlogPostsAsync()
-        {
-            if (_dbContext.BlogPosts.Any())
-                return;
+        //}
+        //private async Task SeedBlogPostsAsync()
+        //{
+        //    if (_dbContext.BlogPosts.Any())
+        //        return;
 
-            var blogId = (await _dbContext.Blogs.AsNoTracking().OrderBy(b => b.Created).FirstOrDefaultAsync()).Id;
-            for (var loop = 1; loop <= 20; loop++)
-            {
-                var title = $"Post Number {loop}";
-                _dbContext.Add(new BlogPost()
-                {
-                    BlogId = blogId,
-                    Title = title,
-                    ReadyStatus = Enums.ReadyState.Ready,
-                    Slug = _slugService.UrlFriendly(title),
-                    Abstract = $"Abstract for Post Number {loop}",
-                    Content = $"Content of Post Number {loop}",
-                    Created = DateTime.Now.AddDays(-loop),
-                    ImageData = await _imageService.EncodeImageAsync("newblog.png"),
-                    ImageType = "png",
+        //    var blogId = (await _dbContext.Blogs.AsNoTracking().OrderBy(b => b.Created).FirstOrDefaultAsync()).Id;
+        //    for (var loop = 1; loop <= 20; loop++)
+        //    {
+        //        var title = $"Post Number {loop}";
+        //        _dbContext.Add(new BlogPost()
+        //        {
+        //            BlogId = blogId,
+        //            Title = title,
+        //            ReadyStatus = Enums.ReadyState.Ready,
+        //            Slug = _slugService.UrlFriendly(title),
+        //            Abstract = $"Abstract for Post Number {loop}",
+        //            Content = $"Content of Post Number {loop}",
+        //            Created = DateTime.Now.AddDays(-loop),
+        //            ImageData = await _imageService.EncodeImageAsync("newblog.png"),
+        //            ImageType = "png",
 
-                });
-            }
-            await _dbContext.SaveChangesAsync();
-        }
+        //        });
+        //    }
+        //    await _dbContext.SaveChangesAsync();
+        //}
 
 
     }

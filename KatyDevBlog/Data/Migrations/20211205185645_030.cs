@@ -2,9 +2,9 @@
 using Microsoft.EntityFrameworkCore.Migrations;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
-namespace KatyDevBlog.Migrations
+namespace KatyDevBlog.Data.Migrations
 {
-    public partial class @fixed : Migration
+    public partial class _030 : Migration
     {
         protected override void Up(MigrationBuilder migrationBuilder)
         {
