@@ -10,6 +10,7 @@ using Microsoft.EntityFrameworkCore;
 using KatyDevBlog.Data;
 using KatyDevBlog.Models;
 using KatyDevBlog.Enums;
+using KatyDevBlog.Services.Interfaces;
 
 namespace KatyDevBlog.Controllers
 {
@@ -17,11 +18,13 @@ namespace KatyDevBlog.Controllers
     {
         private readonly ApplicationDbContext _context;
         private readonly UserManager<BlogUser> _userManager;
+        private readonly ISlugService _slugService;
 
-        public CommentsController(ApplicationDbContext context, UserManager<BlogUser> userManager)
+        public CommentsController(ApplicationDbContext context, UserManager<BlogUser> userManager, ISlugService slugService)
         {
             _context = context;
             _userManager = userManager;
+            _slugService = slugService;
         }
 
         // GET: Comments
@@ -58,7 +61,7 @@ namespace KatyDevBlog.Controllers
         // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Create([Bind("BlogPostId,CommentBody")] Comment comment)
+        public async Task<IActionResult> Create([Bind("BlogPostId,CommentBody")] Comment comment, string slug)
         {
             if (ModelState.IsValid)
             {
@@ -72,11 +75,11 @@ namespace KatyDevBlog.Controllers
                 //return RedirectToAction(nameof(Index));
 
                 //Return the user back to the Details page
-                return RedirectToAction("Details", "BlogPosts", new { id = comment.BlogPostId });
+                return RedirectToAction("Details", "BlogPosts", new { slug });
 
             }
 
-            return View(comment);
+            return RedirectToAction("Details", "BlogPosts", new { slug });
         }
 
 
@@ -85,7 +88,7 @@ namespace KatyDevBlog.Controllers
         // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Edit(int commentId, string body)
+        public async Task<IActionResult> Edit(int commentId, string body, string slug)
         {
             if (commentId == 0)
                 return NotFound();
@@ -96,7 +99,7 @@ namespace KatyDevBlog.Controllers
                 comment.CommentBody = body;
                 comment.Updated = DateTime.Now;
                 await _context.SaveChangesAsync();
-                return RedirectToAction("Details", "BlogPosts", new { id = comment.BlogPostId }, "fragComment");
+                return RedirectToAction("Details", "BlogPosts", new { slug = slug }, "fragComment");
             }
             catch (DbUpdateConcurrencyException)
             {
@@ -113,6 +116,7 @@ namespace KatyDevBlog.Controllers
 
         [HttpPost]
         [ValidateAntiForgeryToken]
+
         public async Task<IActionResult> Moderate(int commentId, int moderationType, string moderatedBody)
         {
             var comment = await _context.Comments.FindAsync(commentId);
@@ -127,6 +131,8 @@ namespace KatyDevBlog.Controllers
 
 
         // GET: Comments/Delete/5
+        [Authorize(Roles = "Administrator")]
+        [Authorize(Roles = "Moderator")]
         public async Task<IActionResult> Delete(int? id)
         {
             if (id == null)

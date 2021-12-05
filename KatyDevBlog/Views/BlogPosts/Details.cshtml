@@ -98,7 +98,8 @@
                         <h2>Add A Comment</h2>
                         <div class="col-6">
                             <form asp-controller="Comments" asp-action="Create">
-                                <input type="hidden" name="BlogPostId" value="@Model.Id" />
+                                <input type="hidden" name="Slug" value="@Model.Slug" />
+                                <input type="hidden" name="blogPostId" value="@Model.Id" />
 
                                 <div class="form-group">
                                     <textarea name="CommentBody" class="form-control" rows="5"></textarea>
@@ -118,7 +119,7 @@
                     //If the user is not logged in I will prompt them to login in order to see the create comment form
                     <div class="row">
                         <div class="col text-center">
-                            <a class="btn btn-lg btn-dark w-75" returnUrl="" asp-area="Identity" asp-page="/Account/Login">Login to add a comment!</a>
+                            <a class="btn btn-lg btn-dark w-75" asp-route-returnUrl="@Url.Action("Details", "BlogPosts" , new { slug = Model.Slug } , null , null , "fragComment" )" asp-area="Identity" asp-page="/Account/Login">Login to add a comment!</a>
                         </div>
                     </div>
                 }
@@ -127,11 +128,11 @@
 
 
                 <div class="row">
-                    <h2>Comments</h2>
+                    <h2 id="fragComment">Comments</h2>
 
                     @foreach (var comment in Model.Comments.OrderByDescending(c => c.Created))
                     {
-                        <div class="offset-1 col-10">
+                        <div class="offset-1 col-10" id="fragComment">
 
                             <div class="media mb-2">
                                 @*@if (comment.BlogUser.ImageData is not null)
@@ -192,6 +193,7 @@
                             <div class="modal-body">
                                 <form asp-controller="Comments" asp-action="Edit">
                                     <input type="hidden" id="ModalCommentId" name="CommentId" />
+                                    <input type="hidden" id="ModalCommentId" name="slug" value="@Model.Slug" />
                                     <textarea id="ModalCommentBody" name="Body" rows="5" class="w-100"></textarea>
                                     <button class="btn btn-dark w-100" type="submit">Submit</button>
                                 </form>

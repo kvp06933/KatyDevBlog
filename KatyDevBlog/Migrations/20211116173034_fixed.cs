@@ -4,7 +4,7 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
 namespace KatyDevBlog.Migrations
 {
-    public partial class Blog020 : Migration
+    public partial class @fixed : Migration
     {
         protected override void Up(MigrationBuilder migrationBuilder)
         {
@@ -61,6 +61,7 @@ namespace KatyDevBlog.Migrations
                     Name = table.Column<string>(type: "character varying(100)", maxLength: 100, nullable: false),
                     Description = table.Column<string>(type: "character varying(200)", maxLength: 200, nullable: false),
                     Created = table.Column<DateTime>(type: "timestamp without time zone", nullable: false),
+                    Slug = table.Column<string>(type: "text", nullable: true),
                     ImageData = table.Column<byte[]>(type: "bytea", nullable: true),
                     ImageType = table.Column<string>(type: "text", nullable: true)
                 },
