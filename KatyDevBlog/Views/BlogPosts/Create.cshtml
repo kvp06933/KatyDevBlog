@@ -22,7 +22,7 @@
             {
                 <div class="form-group">
                     <label asp-for="BlogId" class="control-label"></label>
-                    <select asp-for="BlogId" class="form-control" asp-items="ViewBag.BlogId"></select>
+                    <select asp-for="BlogId" class="form-control blogSelect" asp-items="ViewBag.BlogId"></select>
                 </div>
             }
 
@@ -45,7 +45,7 @@
 
             <div class="form-group">
                 <label asp-for="ReadyStatus" class="control-label"></label>
-                <select asp-for="ReadyStatus" asp-items="@Html.GetEnumSelectList(typeof(ReadyState))" class="form-control"></select>
+                <select asp-for="ReadyStatus" asp-items="@Html.GetEnumSelectList(typeof(ReadyState))" class="form-control blogSelect"></select>
                 <span asp-validation-for="ReadyStatus" class="text-danger"></span>
             </div>
 
