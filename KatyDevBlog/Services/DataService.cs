@@ -50,8 +50,8 @@ namespace KatyDevBlog.Services
             if (_dbContext.Users.Any()) return;
             BlogUser admin = new()
             {
-                Email = "KatherinePitts@mailinator.com",
-                UserName = "KatherinePitts@mailinator.com",
+                Email = "katherinepittscf@gmail.com",
+                UserName = "katherinepittscf@gmail.com",
                 FirstName = "Katherine",
                 LastName = "Pitts",
                 PhoneNumber = "555-1212",
@@ -62,7 +62,7 @@ namespace KatyDevBlog.Services
             await _userManager.CreateAsync(admin, "Abc&123!");
             await _userManager.AddToRoleAsync(admin, "Administrator");
 
-            //Todo: Now seed a user who will occupy the moderator role.
+            
             BlogUser moderator = new()
             {
                 Email = "PeterParker@mailinator.com",
@@ -78,8 +78,8 @@ namespace KatyDevBlog.Services
             await _userManager.AddToRoleAsync(moderator, "Moderator");
             BlogUser moderator2 = new()
             {
-                Email = "DrewRussell@mailinator.com",
-                UserName = "DrewRussell@mailinator.com",
+                Email = "drussell@mailinator.com",
+                UserName = "drussell@mailinator.com",
                 FirstName = "Drew",
                 LastName = "Russell",
                 PhoneNumber = "555-2424",
