@@ -14,9 +14,12 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
+using Microsoft.OpenApi.Models;
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
+using System.Reflection;
 using System.Threading.Tasks;
 
 namespace KatyDevBlog
@@ -53,6 +56,28 @@ namespace KatyDevBlog
             services.AddTransient<IEmailSender, BasicEmailService>();
             services.AddScoped<SearchService>();
             services.AddScoped<BlogService>();
+
+            services.AddSwaggerGen(c =>
+            {
+                c.SwaggerDoc("v1", new OpenApiInfo
+                {
+                    Version = "v1",
+                    Title = "The KatyDevBlog Portal Service",
+                    Description = "This is a really good description",
+                    Contact = new OpenApiContact
+                    {
+                        Name = "Katherine Pitts",
+                        Email = "katherinepittscf@gmail.com",
+                        Url = new Uri("https://katydevblog.herokuapp.com")
+                    }
+                });
+
+                var xmlFile = $"{Assembly.GetExecutingAssembly().GetName().Name}.xml";
+                var xmlPath = Path.Combine(AppContext.BaseDirectory, xmlFile);
+                c.IncludeXmlComments(xmlPath);
+            });
+
+            
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
@@ -71,6 +96,13 @@ namespace KatyDevBlog
             }
             app.UseHttpsRedirection();
             app.UseStaticFiles();
+
+            app.UseSwagger();
+            app.UseSwaggerUI(c =>
+           {
+               c.SwaggerEndpoint("/swagger/v1/swagger.json", "KatyDevBlogAPI");
+               c.RoutePrefix = "";
+           });
 
             app.UseRouting();
 
