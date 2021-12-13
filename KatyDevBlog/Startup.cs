@@ -101,7 +101,7 @@ namespace KatyDevBlog
             app.UseSwaggerUI(c =>
            {
                c.SwaggerEndpoint("/swagger/v1/swagger.json", "KatyDevBlogAPI");
-               c.RoutePrefix = "";
+               //c.RoutePrefix = "";
            });
 
             app.UseRouting();
