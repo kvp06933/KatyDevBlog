@@ -36,9 +36,9 @@
                     <div class="card blog-post-card">
                         <img class="img-fluid" src="@_imageService.DecodeImage(blog.ImageData, blog.ImageType)" />
                         <div class="card-body">
-                            <h5 class="card-title"><a class="theme-link" asp-controller="BlogPosts" asp-action="ChildIndex" asp-route-slug="@blog.Slug">@blog.Name</a></h5>
+                            <h5 class="card-title"><a class="theme-link" asp-controller="BlogPosts" asp-action="ChildIndex" asp-route-blogId="@blog.Id">@blog.Name</a></h5>
                             <p class="card-text">@blog.Description</p>
-                            <p class="mb-0"><a class="text-link" asp-controller="BlogPosts" asp-action="ChildIndex" asp-route-slug="@blog.Slug">Read more &rarr;</a></p>
+                            <p class="mb-0"><a class="text-link" asp-controller="BlogPosts" asp-action="ChildIndex" asp-route-blogId="@blog.Id">Read more &rarr;</a></p>
 
                         </div>
                         <div class="card-footer">
