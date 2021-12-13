@@ -12,5 +12,10 @@
             <param name="num">The number of Blog Posts you want </param>
             <returns>List of type Blog Post</returns>
         </member>
+        <member name="P:KatyDevBlog.Models.BlogPost.BlogId">
+            <summary>
+            This is the foreign key
+            </summary>
+        </member>
     </members>
 </doc>

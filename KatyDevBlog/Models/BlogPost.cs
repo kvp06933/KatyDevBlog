@@ -12,7 +12,9 @@ namespace KatyDevBlog.Models
     public class BlogPost
     {
         public int Id { get; set; }
-
+        /// <summary>
+        /// This is the foreign key
+        /// </summary>
         public int BlogId { get; set; }
 
         //Descriptive properties
