@@ -25,7 +25,7 @@ namespace KatyDevBlog.Controllers.APIs
         /// <summary>
         /// Returns the most recent x number of Blog Posts
         /// </summary>
-        /// <remarks> Jason, 3/29/2021. </remarks>
+        /// <remarks> Katy, 12/13/2021. </remarks>
         /// <param name="num">The number of Blog Posts you want </param>
         /// <returns>List of type Blog Post</returns>
 
