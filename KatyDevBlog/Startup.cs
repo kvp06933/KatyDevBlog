@@ -77,6 +77,13 @@ namespace KatyDevBlog
                 c.IncludeXmlComments(xmlPath);
             });
 
+            services.AddCors(options =>
+            {
+                options.AddPolicy("DefaultCorsPolicy",
+                    builder => builder.AllowAnyOrigin()
+                                      .AllowAnyMethod()
+                                      .AllowAnyHeader());
+            });
             
         }
 
@@ -103,6 +110,9 @@ namespace KatyDevBlog
                c.SwaggerEndpoint("/swagger/v1/swagger.json", "KatyDevBlogAPI");
                //c.RoutePrefix = "";
            });
+
+            //Use the defined policy from ConfigureServices
+            app.UseCors("DefaultCorsPolicy");
 
             app.UseRouting();
 
